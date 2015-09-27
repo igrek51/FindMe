@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
             getWindow().setFlags(Config.geti().fullscreen_flag, Config.geti().fullscreen_flag);
         }
         engine = new Engine(this);
-        setContentView(engine.canvas);
+        setContentView(engine.graphics);
         engine.start();
     }
 
@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         engine.pause();
     }
+
     @Override
 
     protected void onResume() {
@@ -64,9 +65,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_exit) {
-            engine.quit();
-            return true;
+        if(engine.options_select(id)){
+            return true; //event obsłużony
         }
         return super.onOptionsItemSelected(item);
     }

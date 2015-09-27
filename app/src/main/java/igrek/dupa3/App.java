@@ -36,4 +36,11 @@ public class App {
 
     //zmienne aplikacji
     public boolean size_changed = false;
+    public Plot plot = new Plot();
+    public class Plot {
+        double ax[], ay[], az[], aw[];
+        int recorded = 0;
+        boolean recording = true;
+    }
+    int state = 0;
 }

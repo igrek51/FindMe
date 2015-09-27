@@ -28,4 +28,5 @@ public class Config {
     public final int timer_fps0 = 25;
     public final int sensor_type = Sensor.TYPE_ACCELEROMETER; // Sensor.TYPE_ROTATION_VECTOR
     public final int plot_buffer_size = 256;
+    public final int fontsize = 15;
 }
