@@ -9,36 +9,35 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
     SensorMaster sensormaster = null;
     App app;
     Config config;
+    Buttons buttons;
+    boolean running = true;
 
     public Engine(Activity activity) {
         this.activity = activity;
         graphics = new GraphicsEngine(activity, this);
         sensormaster = new SensorMaster(activity);
+        buttons = new Buttons();
         app = App.geti();
+        App.engine = this;
+        App.activity = activity;
         config = Config.geti();
         //init
-        app.plot.ax = new double[config.plot_buffer_size];
-        app.plot.ay = new double[config.plot_buffer_size];
-        app.plot.az = new double[config.plot_buffer_size];
-        app.plot.aw = new double[config.plot_buffer_size];
+        app.plot.buffer = new double[config.plot_buffer_size];
         for (int i = 0; i < config.plot_buffer_size; i++) {
-            app.plot.ax[i] = 0;
-            app.plot.ay[i] = 0;
-            app.plot.az[i] = 0;
-            app.plot.aw[i] = 0;
+            app.plot.buffer[i] = 0;
         }
+        buttons.add("dupa", "dupa", 10, 50, 0, 0, buttons.ADJUST);
         App.log("Utworzenie aplikacji.");
     }
 
     @Override
     public void timer_run() {
+        if (!running) return;
         if (App.geti().size_changed) {
             size_changed();
         }
-        synchronized (graphics) {
-            update();
-            graphics.invalidate();
-        }
+        update();
+        graphics.invalidate();
     }
 
     public void size_changed() {
@@ -60,37 +59,48 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
     }
 
     public void quit() {
-        App.log("Zamykanie aplikacji");
+        running = false;
         timer.stop();
+        sensormaster.unregister();
+        App.log("Zamykanie aplikacji");
         activity.finish();
     }
 
     public void update() {
+        if(buttons.isClicked()){
+            String bid = buttons.clickedId();
+            if(bid.equals("dupa")){
+                App.info("Wciśnięto Dupę!");
+            }
+        }
         if (app.plot.recording) add_record();
     }
 
     @Override
     public void touch_down(float touch_x, float touch_y) {
-        float rtx = touch_x / graphics.w;
-        float rty = touch_y / graphics.h;
+
     }
 
     @Override
     public void touch_move(float touch_x, float touch_y) {
-        float rtx = touch_x / graphics.w;
-        float rty = touch_y / graphics.h;
+
     }
 
     @Override
     public void touch_up(float touch_x, float touch_y) {
-        float rtx = touch_x / graphics.w;
-        float rty = touch_y / graphics.h;
-
+        buttons.checkClicked(touch_x, touch_y);
     }
 
-    public boolean options_select(int id){
+    public boolean options_select(int id) {
         if (id == R.id.action_exit) {
             quit();
+            return true;
+        } else if (id == R.id.action_clear) {
+            clear_records();
+            app.plot.recording = false;
+            return true;
+        } else if (id == R.id.action_startstop) {
+            app.plot.recording ^= true;
             return true;
         }
         return false;
@@ -102,16 +112,14 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         }
         //przesunięcie starych rekordów
         for (int i = config.plot_buffer_size - app.plot.recorded; i < config.plot_buffer_size - 1; i++) {
-            app.plot.ax[i] = app.plot.ax[i + 1];
-            app.plot.ay[i] = app.plot.ay[i + 1];
-            app.plot.az[i] = app.plot.az[i + 1];
-            app.plot.aw[i] = app.plot.aw[i + 1];
+            app.plot.buffer[i] = app.plot.buffer[i + 1];
         }
         //nowy rekord
-        app.plot.ax[config.plot_buffer_size - 1] = sensormaster.get_ax();
-        app.plot.ay[config.plot_buffer_size - 1] = sensormaster.get_ay();
-        app.plot.az[config.plot_buffer_size - 1] = sensormaster.get_az();
-        app.plot.aw[config.plot_buffer_size - 1] = sensormaster.get_a_resultant();
+        if(app.sensor_axis == 7){
+            app.plot.buffer[config.plot_buffer_size - 1] = sensormaster.get_w();
+        }else {
+            app.plot.buffer[config.plot_buffer_size - 1] = sensormaster.get_value(app.sensor_axis);
+        }
     }
 
     void clear_records() {
@@ -134,5 +142,22 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         }
         return Math.sqrt(suma / app.plot.recorded);
     }
+
+    double max(double tab[]) {
+        double max = tab[0];
+        for (int i = config.plot_buffer_size - app.plot.recorded; i < config.plot_buffer_size; i++) {
+            if (tab[i] > max) max = tab[i];
+        }
+        return max;
+    }
+
+    double min(double tab[]) {
+        double min = tab[0];
+        for (int i = config.plot_buffer_size - app.plot.recorded; i < config.plot_buffer_size; i++) {
+            if (tab[i] < min) min = tab[i];
+        }
+        return min;
+    }
+
 
 }

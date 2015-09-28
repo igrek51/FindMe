@@ -9,7 +9,6 @@ public class Config {
         instance = this; //dla pewności
     }
 
-
     private static Config instance = null;
 
     public static Config geti() {
@@ -25,8 +24,12 @@ public class Config {
     public final boolean hide_taskbar = true;
     public final boolean fullscreen = true;
     public final int timer_interval0 = 0;
-    public final int timer_fps0 = 25;
-    public final int sensor_type = Sensor.TYPE_ACCELEROMETER; // Sensor.TYPE_ROTATION_VECTOR
+    public final int timer_fps0 = 6;
+    public final int sensor_type = Sensor.TYPE_ROTATION_VECTOR; //TYPE_ACCELEROMETER, TYPE_MAGNETIC_FIELD, TYPE_ROTATION_VECTOR
+    public final float indicator_scale = 0.05f;
     public final int plot_buffer_size = 256;
     public final int fontsize = 15;
+    public final String sensor_units = " dupa";
+    public final int echo_spaces = 40;
+    public final int button_padding = 5;
 }

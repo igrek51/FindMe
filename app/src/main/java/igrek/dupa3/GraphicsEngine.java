@@ -21,26 +21,27 @@ public class GraphicsEngine extends CanvasView {
         drawText("Igrek", w, 0, Align.RIGHT);
 
         if (app.state == 0) {
-            float axisx = engine.sensormaster.get_ax();
-            float axisy = engine.sensormaster.get_ay();
-            float axisz = engine.sensormaster.get_az();
-            float a_wyp = engine.sensormaster.get_a_resultant();
+            float axisx = engine.sensormaster.get_x();
+            float axisy = engine.sensormaster.get_y();
+            float axisz = engine.sensormaster.get_z();
+            float a_wyp = engine.sensormaster.get_w();
             setColor("ffffff");
-            drawText("a X: " + axisx + " m/s^2", 0, 0);
-            drawText("a Y: " + axisy + " m/s^2", 0, 15);
-            drawText("a Z: " + axisz + " m/s^2", 0, 30);
-            drawText("a wypadkowe: " + a_wyp, 0, 45);
+            drawText("X: " + axisx + config.sensor_units, 0, 0);
+            drawText("Y: " + axisy + config.sensor_units, 0, 15);
+            drawText("Z: " + axisz + config.sensor_units, 0, 30);
+            drawText("W: " + a_wyp + config.sensor_units, 0, 45);
             drawText("Czas: " + System.currentTimeMillis(), 0, 60);
             drawText("Liczba punktow: " + app.plot.recorded, 0, 75);
             drawText("Rejestrowanie: " + (app.plot.recording ? "tak" : "nie"), 0, 90);
             //wektory
             setColor("006000");
-            drawLine(0, h - w / 2, w, h - w / 2);
-            drawLine(w / 2, h - w, w / 2, h);
-            drawText("X", 0, h - w / 2, Align.BOTTOM | Align.LEFT);
-            drawText("Y", w / 2, h - 15, Align.BOTTOM | Align.RIGHT);
+            drawLine(0, h / 2, w, h / 2);
+            drawLine(w / 2, 0, w / 2, h);
+            drawText("X", 0, h / 2, Align.BOTTOM | Align.LEFT);
+            drawText("Y", w / 2, 0, Align.BOTTOM | Align.RIGHT);
             setColor("00c0c0");
-            drawLine(w / 2, h - w / 2, (int) ((1 - axisx / 13) * w / 2), (int) ((axisy / 13 - 1) * w / 2 + h));
+            float scale = config.indicator_scale * w / 2;
+            drawLine(w / 2, h / 2, w / 2 + axisy * scale, h / 2 + axisx * scale);
         } else if (app.state <= 4) {
             setColor("006000");
             drawLine(0, h / 2, w, h / 2);
@@ -65,7 +66,7 @@ public class GraphicsEngine extends CanvasView {
                 double skala = (h / 2) / (max - min);
                 //os pionowa
                 setColor("006000");
-                drawText("m/s^2", 0, 0);
+                drawText(config.sensor_units, 0, 0);
                 for (int i = 0; i < 8; i++) {
                     setColor("002000");
                     if (i > 0)
@@ -77,45 +78,59 @@ public class GraphicsEngine extends CanvasView {
                 //punkty
                 setColor("00c000");
                 for (int i = config.plot_buffer_size - app.plot.recorded; i < config.plot_buffer_size - 1; i++) {
-                    int x1 = (i * w / config.plot_buffer_size);
+                    int x1 = (i * w / config.plot_buffer_size); //skalowanie wzdłuż osi X
                     if (x1 > w) break;
                     int x2 = ((i + 1) * w / config.plot_buffer_size);
-                    int y1 = (int) ((tab[i] - min) * skala);
+                    int y1 = (int) ((tab[i] - min) * skala); //skalowanie wzdłuż osi Y
                     int y2 = (int) ((tab[i + 1] - min) * skala);
                     drawLine(x1, h / 2 - y1, x2, h / 2 - y2);
                 }
                 setColor("407040");
                 number = Math.floor(engine.srednia(tab) * 1000) / 1000;
-                drawText("Średnia arytm.: " + number + " m/s^2", 0, h / 2 + 25);
+                drawText("Średnia arytmetyczna: " + number + config.sensor_units, 0, h / 2 + 25);
                 number = Math.floor(engine.odchylenie(tab) * 100000) / 100000;
-                drawText("Odchylenie standardowe: " + number + " m/s^2", 0, h / 2 + 40);
+                drawText("Odchylenie standardowe: " + number + config.sensor_units, 0, h / 2 + 40);
+                drawText("Maximum: " + engine.max(tab) + config.sensor_units, 0, h / 2 + 55);
+                drawText("Minimum: " + engine.min(tab) + config.sensor_units, 0, h / 2 + 70);
             }
             setColor("409090");
             String txt = "";
             if (app.state == 1) {
-                txt = "a_x";
-                number = Math.floor(engine.sensormaster.get_ax() * 100000) / 100000;
+                txt = "x";
+                number = Math.floor(engine.sensormaster.get_x() * 100000) / 100000;
             }
             if (app.state == 2) {
-                txt = "a_y";
-                number = Math.floor(engine.sensormaster.get_ay() * 100000) / 100000;
+                txt = "y";
+                number = Math.floor(engine.sensormaster.get_y() * 100000) / 100000;
             }
             if (app.state == 3) {
-                txt = "a_z";
-                number = Math.floor(engine.sensormaster.get_az() * 100000) / 100000;
+                txt = "z";
+                number = Math.floor(engine.sensormaster.get_z() * 100000) / 100000;
             }
             if (app.state == 4) {
-                txt = "a_wypadkowe";
-                number = Math.floor(engine.sensormaster.get_a_resultant() * 100000) / 100000;
+                txt = "w";
+                number = Math.floor(engine.sensormaster.get_w() * 100000) / 100000;
             }
-            drawText(txt + ": " + number + " m/s^2", 0, h / 2 + 10);
+            drawText(txt + ": " + number + config.sensor_units, 0, h / 2 + 10);
         }
-        setColor("ffffff");
-        if (app.plot.recorded > 0) drawText("Zeruj", 0, h, Align.BOTTOM | Align.LEFT);
-        drawText(app.plot.recording ? "Stop" : "Start", w / 2, h, Align.BOTTOM | Align.HCENTER);
-        drawText("Wyjście", w, h, Align.BOTTOM | Align.RIGHT);
-        setColor("00c0c0");
-        String info = "";
-        drawText(info, w, h - 15, Align.BOTTOM | Align.RIGHT);
+        drawButtons();
+        setColor("00ff00");
+        drawText(app.echo_show(), 0, h, Align.BOTTOM);
+    }
+
+    public void drawButtons() {
+        for (Buttons.Button b : engine.buttons.buttons) {
+            drawButton(b);
+        }
+    }
+
+    public void drawButton(Buttons.Button b) {
+        if (!b.active) return;
+        setColor("404040");
+        fillRect(b.x, b.y, b.x + b.w, b.y + b.h);
+        setColor("808080");
+        outlineRect(b.x, b.y, b.x + b.w, b.y + b.h, 2);
+        setColor("f0f0f0");
+        drawText(b.text, b.x + b.w / 2, b.y + b.h / 2, Align.CENTER);
     }
 }

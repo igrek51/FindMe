@@ -1,4 +1,12 @@
 <resources>
-    <string name="app_name">Dupa3</string>
+    <string name="app_name">Sensoring na displeju</string>
+
     <string name="action_exit">Wyjście</string>
+    <string name="action_clear">Wyczyść dane</string>
+    <string name="action_startstop">Uruchom / Zatrzymaj</string>
+    <string name="action_info">Odczyt sensora</string>
+    <string name="action_show_x">Wykres X</string>
+    <string name="action_show_y">Wykres Y</string>
+    <string name="action_show_z">Wykres Z</string>
+    <string name="action_show_result">Wykres wypadkowy</string>
 </resources>

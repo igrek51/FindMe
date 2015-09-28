@@ -135,4 +135,11 @@ public class CanvasView extends View {
         paint.setStyle(Paint.Style.FILL);
         canvas.drawRect(left, top, right, bottom, paint);
     }
+
+    public void outlineRect(float left, float top, float right, float bottom, float thickness){
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(thickness);
+        canvas.drawRect(left, top, right, bottom, paint);
+        paint.setStrokeWidth(0);
+    }
 }

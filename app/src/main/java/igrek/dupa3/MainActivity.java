@@ -51,8 +51,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         engine.quit();
+        super.onDestroy();
     }
 
     @Override
