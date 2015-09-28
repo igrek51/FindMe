@@ -20,8 +20,12 @@ public class App {
         return instance;
     }
 
+    public static App reset() {
+        instance = new App();
+        return instance;
+    }
+
     public static Engine engine = null;
-    public static Activity activity = null;
 
     //funkcje pomocnicze
     public static void log(String l) {
@@ -57,11 +61,11 @@ public class App {
     }
 
     public static void errorCritical(String e) {
-        if (activity == null) {
+        if (engine == null || engine.activity == null) {
             error("errorCritical: Brak activity");
             return;
         }
-        AlertDialog.Builder dlgAlert = new AlertDialog.Builder(activity);
+        AlertDialog.Builder dlgAlert = new AlertDialog.Builder(engine.activity);
         dlgAlert.setMessage(e);
         dlgAlert.setTitle("Błąd krytyczny");
         dlgAlert.setPositiveButton("Zamknij", new DialogInterface.OnClickListener() {
@@ -82,11 +86,11 @@ public class App {
     }
 
     public static void infoMessage(String e) {
-        if (activity == null) {
+        if (engine == null || engine.activity == null) {
             error("infoMessage: Brak activity");
             return;
         }
-        AlertDialog.Builder dlgAlert = new AlertDialog.Builder(activity);
+        AlertDialog.Builder dlgAlert = new AlertDialog.Builder(engine.activity);
         dlgAlert.setMessage(e);
         dlgAlert.setTitle("Info");
         dlgAlert.setPositiveButton("OK", null);
@@ -103,17 +107,50 @@ public class App {
         return old_echos;
     }
 
+    public static float round(float number, int precision) {
+        int multip = 1;
+        for (int i = 0; i < precision; i++) {
+            multip *= 10;
+        }
+        return (float) Math.round((double) number * multip) / multip;
+    }
+
+    public static double round(double number, int precision) {
+        int multip = 1;
+        for (int i = 0; i < precision; i++) {
+            multip *= 10;
+        }
+        return Math.round(number * multip) / multip;
+    }
+
+    public static float round(float number) {
+        return round(number, 0);
+    }
+
+    public static double round(double number) {
+        return round(number, 0);
+    }
+
     //zmienne aplikacji
-    public boolean size_changed = false;
+    public boolean running = true;
 
     public static String echos = "";
     public Plot plot = new Plot();
 
     public class Plot {
-        double buffer[];
+        float buffer[];
         int recorded = 0;
         boolean recording = true;
     }
+
+    Mode mode = Mode.MENU;
+
+    public enum Mode {
+        MENU, PLOT, COMPASS, SPIRIT_LEVEL
+    }
+
     int sensor_type = 0;
     int sensor_axis = 0;
+    boolean sensor_accelerometer_enabled = false;
+    boolean sensor_magnetic_enabled = false;
 }

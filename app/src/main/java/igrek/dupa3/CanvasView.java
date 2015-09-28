@@ -32,6 +32,8 @@ public class CanvasView extends View {
         void touch_move(float touch_x, float touch_y);
 
         void touch_up(float touch_x, float touch_y);
+
+        void resize_event();
     }
 
     @Override
@@ -39,7 +41,7 @@ public class CanvasView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         this.w = getWidth();
         this.h = getHeight();
-        App.geti().size_changed = true;
+        touchListener.resize_event();
     }
 
     @Override

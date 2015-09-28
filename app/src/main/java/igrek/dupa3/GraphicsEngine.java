@@ -1,6 +1,7 @@
 package igrek.dupa3;
 
 import android.content.Context;
+import android.hardware.Sensor;
 
 public class GraphicsEngine extends CanvasView {
     App app;
@@ -19,12 +20,75 @@ public class GraphicsEngine extends CanvasView {
         paint.setTextSize(config.fontsize);
         setColor("252525");
         drawText("Igrek", w, 0, Align.RIGHT);
+        //menu
+        if (app.mode == App.Mode.MENU) {
+            for (Sensor sensor : engine.sensormaster.msensorList) {
+                if (sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 
-        if (app.state == 0) {
-            float axisx = engine.sensormaster.get_x();
-            float axisy = engine.sensormaster.get_y();
-            float axisz = engine.sensormaster.get_z();
-            float a_wyp = engine.sensormaster.get_w();
+                }else if (sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+
+                }
+
+            }
+        } else if (app.mode == App.Mode.PLOT) {
+            //układ współrzędnych
+            setColor("006000");
+            float plot_offset = config.plot_part * h;
+            drawLine(0, plot_offset, w, plot_offset);
+            drawLine(1, 0, 1, plot_offset);
+            if (app.plot.recorded > 1) {
+                //skala
+                float tab[] = app.plot.buffer;
+                //wyznaczenie minimum i maksimum - prawdziwe
+                float min = tab[config.plot_buffer_size - 1];
+                float max = tab[config.plot_buffer_size - 1];
+                for (int i = config.plot_buffer_size - app.plot.recorded; i < config.plot_buffer_size; i++) {
+                    if (tab[i] > max) max = tab[i];
+                    if (tab[i] < min) min = tab[i];
+                }
+                float roznica = max - min;
+                if (roznica < 0.5) roznica = 0.5f;
+                float max2 = max + roznica / config.plot_sections; //minimum i maksimum na wykresie
+                float min2 = min - roznica / config.plot_sections;
+                float skala = (plot_offset) / (max2 - min2);
+                //os pionowa
+                setColor("006000");
+                drawText(engine.sensormaster.get_units(), 0, 0);
+                for (int i = 0; i < config.plot_sections + 2; i++) {
+                    //linia pomocnicza
+                    setColor("002000");
+                    float ypos = (1 - (float) i / 8) * plot_offset;
+                    if (i > 0) drawLine(0, ypos, w, ypos);
+                    //wartość pomocnicza
+                    setColor("009000");
+                    float numer_pomocniczy = App.round((float) i / (config.plot_sections + 2) * (max2 - min2) + min2, 3);
+                    drawText("" + numer_pomocniczy, 2, ypos, Align.VCENTER);
+                }
+                //punkty
+                setColor("00c000");
+                for (int i = config.plot_buffer_size - app.plot.recorded; i < config.plot_buffer_size - 1; i++) {
+                    float x1 = (float) (i * w) / config.plot_buffer_size; //skalowanie wzdłuż osi X
+                    float x2 = (float) (i + 1) * w / config.plot_buffer_size;
+                    float y1 = (float) ((tab[i] - min2) * skala); //skalowanie wzdłuż osi Y
+                    float y2 = (float) ((tab[i + 1] - min2) * skala);
+                    drawLine(x1, plot_offset - y1, x2, plot_offset - y2);
+                }
+                setColor("407040");
+                float ypos = plot_offset + 25;
+                drawText("Wartość " + engine.sensormaster.get_name() + ": " + engine.sensormaster.get_value() + engine.sensormaster.get_units(), 0, ypos);
+                ypos += config.lineheight;
+                drawText("Średnia arytmetyczna: " + App.round(engine.srednia(tab), 5) + engine.sensormaster.get_units(), 0, ypos);
+                ypos += config.lineheight;
+                drawText("Odchylenie standardowe: " + App.round(engine.odchylenie(tab), 5) + engine.sensormaster.get_units(), 0, ypos);
+                ypos += config.lineheight;
+                drawText("Maximum: " + max + engine.sensormaster.get_units(), 0, ypos);
+                ypos += config.lineheight;
+                drawText("Minimum: " + min + engine.sensormaster.get_units(), 0, ypos);
+            }
+        } else if (app.mode == App.Mode.COMPASS) {
+
+        } else if (app.mode == App.Mode.SPIRIT_LEVEL) {
+            /*
             setColor("ffffff");
             drawText("X: " + axisx + config.sensor_units, 0, 0);
             drawText("Y: " + axisy + config.sensor_units, 0, 15);
@@ -42,78 +106,13 @@ public class GraphicsEngine extends CanvasView {
             setColor("00c0c0");
             float scale = config.indicator_scale * w / 2;
             drawLine(w / 2, h / 2, w / 2 + axisy * scale, h / 2 + axisx * scale);
-        } else if (app.state <= 4) {
-            setColor("006000");
-            drawLine(0, h / 2, w, h / 2);
-            drawLine(1, 0, 1, h / 2);
-            double number = 0;
-            if (app.plot.recorded > 1) {
-                //skala
-                double tab[] = null;
-                if (app.state == 1) tab = app.plot.ax;
-                if (app.state == 2) tab = app.plot.ay;
-                if (app.state == 3) tab = app.plot.az;
-                if (app.state == 4) tab = app.plot.aw;
-                double min = tab[config.plot_buffer_size - 1], max = tab[config.plot_buffer_size - 1];
-                for (int i = config.plot_buffer_size - app.plot.recorded; i < config.plot_buffer_size; i++) {
-                    if (tab[i] > max) max = tab[i];
-                    if (tab[i] < min) min = tab[i];
-                }
-                double roznica = max - min;
-                if (roznica < 0.8) roznica = 0.8;
-                max += roznica / 6;
-                min -= roznica / 6;
-                double skala = (h / 2) / (max - min);
-                //os pionowa
-                setColor("006000");
-                drawText(config.sensor_units, 0, 0);
-                for (int i = 0; i < 8; i++) {
-                    setColor("002000");
-                    if (i > 0)
-                        drawLine(0, (int) ((1 - ((double) i) / 8) * h / 2), w, (int) ((1 - ((double) i) / 8) * h / 2));
-                    setColor("009000");
-                    number = (float) Math.floor((((double) i) * h / 16 / skala + min) * 1000) / 1000;
-                    drawText("" + number, 2, (int) ((1 - ((double) i) / 8) * h / 2) - 8);
-                }
-                //punkty
-                setColor("00c000");
-                for (int i = config.plot_buffer_size - app.plot.recorded; i < config.plot_buffer_size - 1; i++) {
-                    int x1 = (i * w / config.plot_buffer_size); //skalowanie wzdłuż osi X
-                    if (x1 > w) break;
-                    int x2 = ((i + 1) * w / config.plot_buffer_size);
-                    int y1 = (int) ((tab[i] - min) * skala); //skalowanie wzdłuż osi Y
-                    int y2 = (int) ((tab[i + 1] - min) * skala);
-                    drawLine(x1, h / 2 - y1, x2, h / 2 - y2);
-                }
-                setColor("407040");
-                number = Math.floor(engine.srednia(tab) * 1000) / 1000;
-                drawText("Średnia arytmetyczna: " + number + config.sensor_units, 0, h / 2 + 25);
-                number = Math.floor(engine.odchylenie(tab) * 100000) / 100000;
-                drawText("Odchylenie standardowe: " + number + config.sensor_units, 0, h / 2 + 40);
-                drawText("Maximum: " + engine.max(tab) + config.sensor_units, 0, h / 2 + 55);
-                drawText("Minimum: " + engine.min(tab) + config.sensor_units, 0, h / 2 + 70);
-            }
-            setColor("409090");
-            String txt = "";
-            if (app.state == 1) {
-                txt = "x";
-                number = Math.floor(engine.sensormaster.get_x() * 100000) / 100000;
-            }
-            if (app.state == 2) {
-                txt = "y";
-                number = Math.floor(engine.sensormaster.get_y() * 100000) / 100000;
-            }
-            if (app.state == 3) {
-                txt = "z";
-                number = Math.floor(engine.sensormaster.get_z() * 100000) / 100000;
-            }
-            if (app.state == 4) {
-                txt = "w";
-                number = Math.floor(engine.sensormaster.get_w() * 100000) / 100000;
-            }
-            drawText(txt + ": " + number + config.sensor_units, 0, h / 2 + 10);
+            */
         }
         drawButtons();
+        drawEcho();
+    }
+
+    public void drawEcho() {
         setColor("00ff00");
         drawText(app.echo_show(), 0, h, Align.BOTTOM);
     }
@@ -126,9 +125,9 @@ public class GraphicsEngine extends CanvasView {
 
     public void drawButton(Buttons.Button b) {
         if (!b.active) return;
-        setColor("404040");
+        setColor("303030");
         fillRect(b.x, b.y, b.x + b.w, b.y + b.h);
-        setColor("808080");
+        setColor("606060");
         outlineRect(b.x, b.y, b.x + b.w, b.y + b.h, 2);
         setColor("f0f0f0");
         drawText(b.text, b.x + b.w / 2, b.y + b.h / 2, Align.CENTER);

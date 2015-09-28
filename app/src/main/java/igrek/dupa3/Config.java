@@ -25,11 +25,13 @@ public class Config {
     public final boolean fullscreen = true;
     public final int timer_interval0 = 0;
     public final int timer_fps0 = 6;
-    public final int sensor_type = Sensor.TYPE_ROTATION_VECTOR; //TYPE_ACCELEROMETER, TYPE_MAGNETIC_FIELD, TYPE_ROTATION_VECTOR
+    //TYPE_ACCELEROMETER, TYPE_MAGNETIC_FIELD, TYPE_ROTATION_VECTOR
     public final float indicator_scale = 0.05f;
     public final int plot_buffer_size = 256;
     public final int fontsize = 15;
-    public final String sensor_units = " dupa";
+    public final int lineheight = 15;
     public final int echo_spaces = 40;
-    public final int button_padding = 5;
+    public final int button_padding = 12;
+    public final float plot_part = 0.6f;
+    public final int plot_sections = 6;
 }
