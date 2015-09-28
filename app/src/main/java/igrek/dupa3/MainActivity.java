@@ -3,6 +3,7 @@ package igrek.dupa3;
 import android.content.res.Configuration;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -68,5 +69,14 @@ public class MainActivity extends AppCompatActivity {
             return true; //event obsłużony
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            engine.keycode_back();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

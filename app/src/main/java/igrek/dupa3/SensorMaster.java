@@ -46,7 +46,7 @@ public class SensorMaster implements SensorEventListener {
         for (Sensor sensorZListy : msensorList) {
             if (sensorZListy.getType() == Sensor.TYPE_ACCELEROMETER) {
                 App.geti().sensor_accelerometer_enabled = true;
-            }else if (sensorZListy.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+            } else if (sensorZListy.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
                 App.geti().sensor_magnetic_enabled = true;
             }
             App.log("Sensor: " + sensorZListy.getName() + ", typ: " + sensorZListy.getType() + ", moc: " + sensorZListy.getPower() + ", rozdzielczosc: " + sensorZListy.getResolution());
@@ -91,10 +91,50 @@ public class SensorMaster implements SensorEventListener {
     }
 
     public String get_units() {
-        return " dupa";
+        if (App.geti().sensor_type == Sensor.TYPE_ACCELEROMETER) {
+            return " m/s^2";
+        } else if (App.geti().sensor_type == Sensor.TYPE_MAGNETIC_FIELD) {
+            return " uT";
+        } else if (App.geti().sensor_type == Sensor.TYPE_ROTATION_VECTOR) {
+            return "";
+        }
+        return "";
     }
 
     public String get_name() {
-        return " dupa";
+        String name1 = "", name2 = "";
+        if (App.geti().sensor_type == Sensor.TYPE_ACCELEROMETER) {
+            name1 = "Przyspieszenie ";
+            if (App.geti().sensor_axis == 1) {
+                name2 = "X";
+            } else if (App.geti().sensor_axis == 2) {
+                name2 = "Y";
+            } else if (App.geti().sensor_axis == 3) {
+                name2 = "Z";
+            } else if (App.geti().sensor_axis == 7) {
+                name2 = "wypadkowe";
+            }
+        } else if (App.geti().sensor_type == Sensor.TYPE_MAGNETIC_FIELD) {
+            name1 = "Pole magnetyczne ";
+            if (App.geti().sensor_axis == 1) {
+                name2 = "X";
+            } else if (App.geti().sensor_axis == 2) {
+                name2 = "Y";
+            } else if (App.geti().sensor_axis == 3) {
+                name2 = "Z";
+            } else if (App.geti().sensor_axis == 7) {
+                name2 = "wypadkowe";
+            }
+        } else if (App.geti().sensor_type == Sensor.TYPE_ROTATION_VECTOR) {
+            name1 = "wektor rotacji ";
+            if (App.geti().sensor_axis == 1) {
+                name2 = "x*sin(th/2)";
+            } else if (App.geti().sensor_axis == 2) {
+                name2 = "y*sin(th/2)";
+            } else if (App.geti().sensor_axis == 3) {
+                name2 = "z*sin(th/2)";
+            }
+        }
+        return name1 + name2;
     }
 }

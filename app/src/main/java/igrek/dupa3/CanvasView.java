@@ -107,6 +107,11 @@ public class CanvasView extends View {
         drawText(text, cx, cy, 0);
     }
 
+    public int getTextWidth(String text){
+        paint.getTextBounds(text, 0, text.length(), textBounds);
+        return textBounds.width();
+    }
+
     public void setColor(String color) {
         if (color.length() > 0 && color.charAt(0) != '#') {
             color = "#" + color;
@@ -131,6 +136,13 @@ public class CanvasView extends View {
     public void fillCircle(float cx, float cy, float radius){
         paint.setStyle(Paint.Style.FILL);
         canvas.drawCircle(cx, cy, radius, paint);
+    }
+
+    public void outlineCircle(float cx, float cy, float radius, float thickness){
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(thickness);
+        canvas.drawCircle(cx, cy, radius, paint);
+        paint.setStrokeWidth(0);
     }
 
     public void fillRect(float left, float top, float right, float bottom){
