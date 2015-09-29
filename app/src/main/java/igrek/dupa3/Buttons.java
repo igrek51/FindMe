@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Buttons {
+    List<Button> buttons = new ArrayList<Button>();
+
     public class Align {
         //pozycja
         static final int LEFT = 0x001;
@@ -86,8 +88,6 @@ public class Buttons {
         public boolean active = true;
     }
 
-    List<Button> buttons = new ArrayList<Button>();
-
     public Button add(String text, String id, float x, float y, float w, float h, int align) {
         Button b = new Button(text, id, x, y, w, h);
         b.setPos(x, y, w, h, align);
@@ -107,7 +107,7 @@ public class Buttons {
         for (Button b : buttons) {
             if (b.id.equals(id)) return b;
         }
-        App.error("Nie znaleziono przycisku o nazwie: " + id);
+        App.geti().error("Nie znaleziono przycisku o nazwie: " + id);
         return null;
     }
 

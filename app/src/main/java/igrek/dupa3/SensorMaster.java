@@ -17,9 +17,9 @@ public class SensorMaster implements SensorEventListener {
 
     public SensorMaster(Activity activity) {
         this.activity = activity;
-        sensorManager = (SensorManager) activity.getSystemService(activity.SENSOR_SERVICE);
+        sensorManager = (SensorManager) activity.getSystemService(this.activity.SENSOR_SERVICE);
         if (sensorManager == null) {
-            App.errorCritical("Błąd usługi sensorów");
+            App.geti().errorCritical("Błąd usługi sensorów");
             return;
         }
         msensorList = sensorManager.getSensorList(Sensor.TYPE_ALL);
@@ -28,13 +28,13 @@ public class SensorMaster implements SensorEventListener {
 
     public void select_sensor() {
         if (App.geti().sensor_type == 0) {
-            App.error("Brak wybranego sensora");
+            App.geti().error("Brak wybranego sensora");
             return;
         }
         //szukanie wybranego sensora
         sensor = sensorManager.getDefaultSensor(App.geti().sensor_type);
         if (sensor == null) {
-            App.error("Nie znaleziono sensora");
+            App.geti().error("Nie znaleziono sensora");
             return;
         }
         register();
@@ -85,6 +85,10 @@ public class SensorMaster implements SensorEventListener {
         return (float) Math.sqrt((double) (values[0] * values[0] + values[1] * values[1] + values[2] * values[2]));
     }
 
+    public float get_resolution(){
+        return sensor.getResolution();
+    }
+
     public String get_units() {
         if (App.geti().sensor_type == Sensor.TYPE_ACCELEROMETER) {
             return " m/s^2";
@@ -92,6 +96,12 @@ public class SensorMaster implements SensorEventListener {
             return " uT";
         } else if (App.geti().sensor_type == Sensor.TYPE_ROTATION_VECTOR) {
             return "";
+        } else if (App.geti().sensor_type == Sensor.TYPE_LIGHT) {
+            return " lux";
+        } else if (App.geti().sensor_type == Sensor.TYPE_PROXIMITY) {
+            return " cm";
+        }else if (App.geti().sensor_type == Sensor.TYPE_ORIENTATION) {
+            return " degrees";
         }
         return "";
     }
@@ -121,13 +131,26 @@ public class SensorMaster implements SensorEventListener {
                 name2 = "wypadkowe";
             }
         } else if (App.geti().sensor_type == Sensor.TYPE_ROTATION_VECTOR) {
-            name1 = "wektor rotacji ";
+            name1 = "Wektor rotacji ";
             if (App.geti().sensor_axis == 1) {
                 name2 = "x*sin(th/2)";
             } else if (App.geti().sensor_axis == 2) {
                 name2 = "y*sin(th/2)";
             } else if (App.geti().sensor_axis == 3) {
                 name2 = "z*sin(th/2)";
+            }
+        } else if (App.geti().sensor_type == Sensor.TYPE_LIGHT) {
+            name1 = "Oświetlenie otoczenia";
+        } else if (App.geti().sensor_type == Sensor.TYPE_PROXIMITY) {
+            name1 = "Zbliżenie";
+        }else if (App.geti().sensor_type == Sensor.TYPE_ORIENTATION) {
+            name1 = "Orientacja: ";
+            if (App.geti().sensor_axis == 1) {
+                name2 = "Azimuth";
+            } else if (App.geti().sensor_axis == 2) {
+                name2 = "Pitch";
+            } else if (App.geti().sensor_axis == 3) {
+                name2 = "Roll";
             }
         }
         return name1 + name2;

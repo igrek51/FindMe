@@ -23,7 +23,6 @@ public class MainActivity extends AppCompatActivity {
         }
         engine = new Engine(this);
         setContentView(engine.graphics);
-        engine.start();
     }
 
     @Override

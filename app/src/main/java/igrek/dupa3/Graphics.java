@@ -7,7 +7,7 @@ public class Graphics extends CanvasView {
     App app;
     Config config;
 
-    public Graphics(Context context, TouchPanel engine) {
+    public Graphics(Context context, Engine engine) {
         super(context, engine);
         app = App.geti();
         config = Config.geti();
@@ -32,20 +32,28 @@ public class Graphics extends CanvasView {
                 ypos += config.lineheight * 1.1f;
                 if (sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
                     last = engine.buttons.find("acc_x").setPos(0, ypos, 0, 0, Buttons.Align.HADJUST);
-                    last = engine.buttons.find("acc_y").setPos(last.x + last.w + config.button_space, ypos, 0, 0, Buttons.Align.HADJUST);
-                    last = engine.buttons.find("acc_z").setPos(last.x + last.w + config.button_space, ypos, 0, 0, Buttons.Align.HADJUST);
-                    last = engine.buttons.find("acc_w").setPos(last.x + last.w + config.button_space, ypos, 0, 0, Buttons.Align.HADJUST);
-                    last = engine.buttons.find("spirit_level").setPos(last.x + last.w + config.button_space, ypos, 0, 0, Buttons.Align.HADJUST);
+                    last = engine.buttons.find("acc_y").setPos(last.x + last.w + config.button_space_h, ypos, 0, 0, Buttons.Align.HADJUST);
+                    last = engine.buttons.find("acc_z").setPos(last.x + last.w + config.button_space_h, ypos, 0, 0, Buttons.Align.HADJUST);
+                    last = engine.buttons.find("acc_w").setPos(last.x + last.w + config.button_space_h, ypos, 0, 0, Buttons.Align.HADJUST);
+                    last = engine.buttons.find("spirit_level").setPos(last.x + last.w + config.button_space_h, ypos, 0, 0, Buttons.Align.HADJUST);
                 } else if (sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
                     last = engine.buttons.find("mag_x").setPos(0, ypos, 0, 0, Buttons.Align.HADJUST);
-                    last = engine.buttons.find("mag_y").setPos(last.x + last.w + config.button_space, ypos, 0, 0, Buttons.Align.HADJUST);
-                    last = engine.buttons.find("mag_z").setPos(last.x + last.w + config.button_space, ypos, 0, 0, Buttons.Align.HADJUST);
-                    last = engine.buttons.find("mag_w").setPos(last.x + last.w + config.button_space, ypos, 0, 0, Buttons.Align.HADJUST);
+                    last = engine.buttons.find("mag_y").setPos(last.x + last.w + config.button_space_h, ypos, 0, 0, Buttons.Align.HADJUST);
+                    last = engine.buttons.find("mag_z").setPos(last.x + last.w + config.button_space_h, ypos, 0, 0, Buttons.Align.HADJUST);
+                    last = engine.buttons.find("mag_w").setPos(last.x + last.w + config.button_space_h, ypos, 0, 0, Buttons.Align.HADJUST);
                 } else if (sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
                     last = engine.buttons.find("rot_x").setPos(0, ypos, 0, 0, Buttons.Align.HADJUST);
-                    last = engine.buttons.find("rot_y").setPos(last.x + last.w + config.button_space, ypos, 0, 0, Buttons.Align.HADJUST);
-                    last = engine.buttons.find("rot_z").setPos(last.x + last.w + config.button_space, ypos, 0, 0, Buttons.Align.HADJUST);
-                    last = engine.buttons.find("compass").setPos(last.x + last.w + config.button_space, ypos, 0, 0, Buttons.Align.HADJUST);
+                    last = engine.buttons.find("rot_y").setPos(last.x + last.w + config.button_space_h, ypos, 0, 0, Buttons.Align.HADJUST);
+                    last = engine.buttons.find("rot_z").setPos(last.x + last.w + config.button_space_h, ypos, 0, 0, Buttons.Align.HADJUST);
+                    last = engine.buttons.find("compass").setPos(last.x + last.w + config.button_space_h, ypos, 0, 0, Buttons.Align.HADJUST);
+                }else if (sensor.getType() == Sensor.TYPE_LIGHT) {
+                    last = engine.buttons.find("light").setPos(0, ypos, 0, 0, Buttons.Align.HADJUST);
+                }else if (sensor.getType() == Sensor.TYPE_PROXIMITY) {
+                    last = engine.buttons.find("proximity").setPos(0, ypos, 0, 0, Buttons.Align.HADJUST);
+                }else if (sensor.getType() == Sensor.TYPE_ORIENTATION) {
+                    last = engine.buttons.find("orientation_1").setPos(0, ypos, 0, 0, Buttons.Align.HADJUST);
+                    last = engine.buttons.find("orientation_2").setPos(last.x + last.w + config.button_space_h, ypos, 0, 0, Buttons.Align.HADJUST);
+                    last = engine.buttons.find("orientation_3").setPos(last.x + last.w + config.button_space_h, ypos, 0, 0, Buttons.Align.HADJUST);
                 }
                 ypos += config.lineheight * 1.6f;
             }
@@ -93,8 +101,10 @@ public class Graphics extends CanvasView {
                     drawLine(x1, plot_offset - y1, x2, plot_offset - y2);
                 }
                 setColor("407040");
-                float ypos = plot_offset;
+                float ypos = plot_offset + 3;
                 drawText(engine.sensormaster.get_name() + " = " + engine.sensormaster.get_value() + engine.sensormaster.get_units(), 0, ypos);
+                ypos += config.lineheight;
+                drawText("Rozdzielczość: " + engine.sensormaster.get_resolution() + engine.sensormaster.get_units(), 0, ypos);
                 ypos += config.lineheight;
                 drawText("Średnia: " + App.round(engine.srednia(tab), 5) + engine.sensormaster.get_units(), 0, ypos);
                 ypos += config.lineheight;
@@ -130,8 +140,8 @@ public class Graphics extends CanvasView {
             //wskazówka
             setColor("00a0f0");
             float scale = config.spirit_level_scale * w / 2;
-            float cx = w / 2 + engine.sensormaster.get_value(1) * scale;
-            float cy = h / 2 + engine.sensormaster.get_value(0) * scale;
+            float cx = w / 2 - engine.sensormaster.get_value(1) * scale;
+            float cy = h / 2 - engine.sensormaster.get_value(0) * scale;
             drawLine(w / 2, h / 2, cx, cy);
             outlineCircle(cx, cy, 10, 1);
         }

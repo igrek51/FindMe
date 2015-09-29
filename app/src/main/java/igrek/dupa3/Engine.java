@@ -4,23 +4,23 @@ import android.app.Activity;
 import android.hardware.Sensor;
 
 public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
-    Graphics graphics = null;
-    Activity activity = null;
+    Graphics graphics;
+    Activity activity;
     TimeMaster timer = null;
-    SensorMaster sensormaster = null;
+    SensorMaster sensormaster;
     App app;
     Config config;
     Buttons buttons;
     boolean init = false;
 
     public Engine(Activity activity) {
-        app = App.reset();
-        App.engine = this;
+        app = App.reset(this);
         this.activity = activity;
         graphics = new Graphics(activity, this);
         sensormaster = new SensorMaster(activity);
         buttons = new Buttons();
         config = Config.geti();
+        timer = new TimeMaster(this);
         App.log("Utworzenie aplikacji.");
     }
 
@@ -31,14 +31,9 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         graphics.invalidate();
     }
 
-    public void start() {
-        timer = new TimeMaster(this);
-        App.log("Start aplikacji.");
-    }
-
     public void init() {
         init = true;
-        //po inicjalizacji grafiki
+        //po inicjalizacji grafiki - po ustaleniu rozmiarów
         App.log("Inicjalizacja.");
         app.plot.buffer = new float[config.plot_buffer_size];
         for (int i = 0; i < config.plot_buffer_size; i++) {
@@ -46,26 +41,34 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         }
         Buttons.Button last;
         //akcelerometr
-        last = buttons.add("Wykres X", "acc_x", 0, 0, 0, 0, Buttons.Align.HADJUST);
-        last = buttons.add("Wykres Y", "acc_y", 0, 0, 0, 0, Buttons.Align.HADJUST);
-        last = buttons.add("Wykres Z", "acc_z", 0, 0, 0, 0, Buttons.Align.HADJUST);
-        last = buttons.add("Wypadkowe", "acc_w", 0, 0, 0, 0, Buttons.Align.HADJUST);
-        last = buttons.add("Poziomica", "spirit_level", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        buttons.add("Wykres X", "acc_x", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        buttons.add("Wykres Y", "acc_y", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        buttons.add("Wykres Z", "acc_z", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        buttons.add("Wypadkowe", "acc_w", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        buttons.add("Poziomica", "spirit_level", 0, 0, 0, 0, Buttons.Align.HADJUST);
         //sensor magnetyczny
-        last = buttons.add("Wykres X", "mag_x", 0, 0, 0, 0, Buttons.Align.HADJUST);
-        last = buttons.add("Wykres Y", "mag_y", 0, 0, 0, 0, Buttons.Align.HADJUST);
-        last = buttons.add("Wykres Z", "mag_z", 0, 0, 0, 0, Buttons.Align.HADJUST);
-        last = buttons.add("Wypadkowe", "mag_w", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        buttons.add("Wykres X", "mag_x", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        buttons.add("Wykres Y", "mag_y", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        buttons.add("Wykres Z", "mag_z", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        buttons.add("Wypadkowe", "mag_w", 0, 0, 0, 0, Buttons.Align.HADJUST);
         //rotation vector sensor
-        last = buttons.add("x*sin(th/2)", "rot_x", 0, 0, 0, 0, Buttons.Align.HADJUST);
-        last = buttons.add("y*sin(th/2)", "rot_y", 0, 0, 0, 0, Buttons.Align.HADJUST);
-        last = buttons.add("z*sin(th/2)", "rot_z", 0, 0, 0, 0, Buttons.Align.HADJUST);
-        last = buttons.add("Kompas", "compass", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        buttons.add("x*sin(th/2)", "rot_x", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        buttons.add("y*sin(th/2)", "rot_y", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        buttons.add("z*sin(th/2)", "rot_z", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        buttons.add("Kompas", "compass", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        //orientation
+        buttons.add("Azimuth", "orientation_1", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        buttons.add("Pitch", "orientation_2", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        buttons.add("Roll", "orientation_3", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        //oświetlenie
+        buttons.add("Czujnik światła", "light", 0, 0, 0, 0, Buttons.Align.HADJUST);
+        //proximity
+        buttons.add("Czujnik zbliżeniowy", "proximity", 0, 0, 0, 0, Buttons.Align.HADJUST);
         //nawigacja po ekranach
         last = buttons.add("Wyjście", "exit", graphics.w, graphics.h, 0, 0, Buttons.Align.HADJUST | Buttons.Align.RIGHT | Buttons.Align.BOTTOM);
         last = buttons.add("Powrót", "back", graphics.w, graphics.h, 0, 0, Buttons.Align.HADJUST | Buttons.Align.RIGHT | Buttons.Align.BOTTOM);
-        last = buttons.add("Wyczyść", "clear", graphics.w, last.y, 0, 0, Buttons.Align.HADJUST | Buttons.Align.RIGHT | Buttons.Align.BOTTOM);
-        last = buttons.add("Start/Stop", "startstop", graphics.w, last.y, 0, 0, Buttons.Align.HADJUST | Buttons.Align.RIGHT | Buttons.Align.BOTTOM);
+        last = buttons.add("Wyczyść", "clear", graphics.w, last.y-config.button_space_v, 0, 0, Buttons.Align.HADJUST | Buttons.Align.RIGHT | Buttons.Align.BOTTOM);
+        last = buttons.add("Start/Stop", "startstop", graphics.w, last.y-config.button_space_v, 0, 0, Buttons.Align.HADJUST | Buttons.Align.RIGHT | Buttons.Align.BOTTOM);
         set_mode(App.Mode.MENU);
     }
 
@@ -86,57 +89,78 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
     }
 
     public void update() {
+        if(!init) return;
         //obsługa przycisków
         if (buttons.isClicked()) {
             String bid = buttons.clickedId();
             if (bid.equals("acc_x")) {
-                App.geti().sensor_type = Sensor.TYPE_ACCELEROMETER;
-                App.geti().sensor_axis = 1;
+                app.sensor_type = Sensor.TYPE_ACCELEROMETER;
+                app.sensor_axis = 1;
                 set_mode(App.Mode.PLOT);
             } else if (bid.equals("acc_y")) {
-                App.geti().sensor_type = Sensor.TYPE_ACCELEROMETER;
-                App.geti().sensor_axis = 2;
+                app.sensor_type = Sensor.TYPE_ACCELEROMETER;
+                app.sensor_axis = 2;
                 set_mode(App.Mode.PLOT);
             } else if (bid.equals("acc_z")) {
-                App.geti().sensor_type = Sensor.TYPE_ACCELEROMETER;
-                App.geti().sensor_axis = 3;
+                app.sensor_type = Sensor.TYPE_ACCELEROMETER;
+                app.sensor_axis = 3;
                 set_mode(App.Mode.PLOT);
             } else if (bid.equals("acc_w")) {
-                App.geti().sensor_type = Sensor.TYPE_ACCELEROMETER;
-                App.geti().sensor_axis = 7;
+                app.sensor_type = Sensor.TYPE_ACCELEROMETER;
+                app.sensor_axis = 7;
                 set_mode(App.Mode.PLOT);
             } else if (bid.equals("spirit_level")) {
                 set_mode(App.Mode.SPIRIT_LEVEL);
             } else if (bid.equals("mag_x")) {
-                App.geti().sensor_type = Sensor.TYPE_MAGNETIC_FIELD;
-                App.geti().sensor_axis = 1;
+                app.sensor_type = Sensor.TYPE_MAGNETIC_FIELD;
+                app.sensor_axis = 1;
                 set_mode(App.Mode.PLOT);
             } else if (bid.equals("mag_y")) {
-                App.geti().sensor_type = Sensor.TYPE_MAGNETIC_FIELD;
-                App.geti().sensor_axis = 2;
+                app.sensor_type = Sensor.TYPE_MAGNETIC_FIELD;
+                app.sensor_axis = 2;
                 set_mode(App.Mode.PLOT);
             } else if (bid.equals("mag_z")) {
-                App.geti().sensor_type = Sensor.TYPE_MAGNETIC_FIELD;
-                App.geti().sensor_axis = 3;
+                app.sensor_type = Sensor.TYPE_MAGNETIC_FIELD;
+                app.sensor_axis = 3;
                 set_mode(App.Mode.PLOT);
             } else if (bid.equals("mag_w")) {
-                App.geti().sensor_type = Sensor.TYPE_MAGNETIC_FIELD;
-                App.geti().sensor_axis = 7;
+                app.sensor_type = Sensor.TYPE_MAGNETIC_FIELD;
+                app.sensor_axis = 7;
                 set_mode(App.Mode.PLOT);
             } else if (bid.equals("rot_x")) {
-                App.geti().sensor_type = Sensor.TYPE_ROTATION_VECTOR;
-                App.geti().sensor_axis = 1;
+                app.sensor_type = Sensor.TYPE_ROTATION_VECTOR;
+                app.sensor_axis = 1;
                 set_mode(App.Mode.PLOT);
             } else if (bid.equals("rot_y")) {
-                App.geti().sensor_type = Sensor.TYPE_ROTATION_VECTOR;
-                App.geti().sensor_axis = 2;
+                app.sensor_type = Sensor.TYPE_ROTATION_VECTOR;
+                app.sensor_axis = 2;
                 set_mode(App.Mode.PLOT);
             } else if (bid.equals("rot_z")) {
-                App.geti().sensor_type = Sensor.TYPE_ROTATION_VECTOR;
-                App.geti().sensor_axis = 3;
+                app.sensor_type = Sensor.TYPE_ROTATION_VECTOR;
+                app.sensor_axis = 3;
                 set_mode(App.Mode.PLOT);
             } else if (bid.equals("compass")) {
                 set_mode(App.Mode.COMPASS);
+            } else if (bid.equals("light")) {
+                app.sensor_type = Sensor.TYPE_LIGHT;
+                app.sensor_axis = 1;
+                set_mode(App.Mode.PLOT);
+            } else if (bid.equals("proximity")) {
+                app.sensor_type = Sensor.TYPE_PROXIMITY;
+                app.sensor_axis = 1;
+                set_mode(App.Mode.PLOT);
+            } else if (bid.equals("orientation_1")) {
+                app.sensor_type = Sensor.TYPE_ORIENTATION;
+                app.sensor_axis = 1;
+                set_mode(App.Mode.PLOT);
+            } else if (bid.equals("orientation_2")) {
+                app.sensor_type = Sensor.TYPE_ORIENTATION;
+                app.sensor_axis = 2;
+                set_mode(App.Mode.PLOT);
+            } else if (bid.equals("orientation_3")) {
+                app.sensor_type = Sensor.TYPE_ORIENTATION;
+                app.sensor_axis = 3;
+                set_mode(App.Mode.PLOT);
             } else if (bid.equals("back")) {
                 set_mode(App.Mode.MENU);
             } else if (bid.equals("clear")) {
@@ -147,7 +171,7 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
             } else if (bid.equals("exit")) {
                 quit();
             } else {
-                App.error("Nie obsłużono zdarzenia dla przycisku: " + bid);
+                app.error("Nie obsłużono zdarzenia dla przycisku: " + bid);
             }
         }
         if (app.plot.recording && app.mode == App.Mode.PLOT) add_record();
@@ -241,6 +265,11 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
             buttons.setActive("rot_y", true);
             buttons.setActive("rot_z", true);
             buttons.setActive("compass", true);
+            buttons.setActive("light", true);
+            buttons.setActive("proximity", true);
+            buttons.setActive("orientation_1", true);
+            buttons.setActive("orientation_2", true);
+            buttons.setActive("orientation_3", true);
             sensormaster.unregister();
             clear_records();
         } else if (app.mode == App.Mode.PLOT) {
@@ -250,14 +279,13 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
             sensormaster.select_sensor();
         } else if (app.mode == App.Mode.SPIRIT_LEVEL) {
             buttons.setActive("back", true);
-            App.geti().sensor_type = Sensor.TYPE_ACCELEROMETER;
+            app.sensor_type = Sensor.TYPE_ACCELEROMETER;
             sensormaster.select_sensor();
         } else if (app.mode == App.Mode.COMPASS) {
             buttons.setActive("back", true);
-            App.geti().sensor_type = Sensor.TYPE_ROTATION_VECTOR;
+            app.sensor_type = Sensor.TYPE_ROTATION_VECTOR;
             sensormaster.select_sensor();
         }
     }
-
 
 }

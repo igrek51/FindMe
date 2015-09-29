@@ -12,13 +12,11 @@ public class CanvasView extends View {
     public int w, h;
     Paint paint;
     Canvas canvas = null;
-    TouchPanel touchListener;
     Engine engine;
 
-    public CanvasView(Context context, TouchPanel touchListener) {
+    public CanvasView(Context context, Engine engine) {
         super(context);
-        this.touchListener = touchListener;
-        this.engine = (Engine) touchListener;
+        this.engine = engine;
         paint = new Paint();
     }
 
@@ -41,7 +39,7 @@ public class CanvasView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         this.w = getWidth();
         this.h = getHeight();
-        touchListener.resize_event();
+        engine.resize_event();
     }
 
     @Override
@@ -57,13 +55,13 @@ public class CanvasView extends View {
         float touch_y = event.getY();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                touchListener.touch_down(touch_x, touch_y);
+                engine.touch_down(touch_x, touch_y);
                 break;
             case MotionEvent.ACTION_MOVE:
-                touchListener.touch_move(touch_x, touch_y);
+                engine.touch_move(touch_x, touch_y);
                 break;
             case MotionEvent.ACTION_UP:
-                touchListener.touch_up(touch_x, touch_y);
+                engine.touch_up(touch_x, touch_y);
                 break;
         }
         return true;

@@ -19,12 +19,13 @@ public class App {
         return instance;
     }
 
-    public static App reset() {
+    public static App reset(Engine engine) {
         instance = new App();
+        instance.engine = engine;
         return instance;
     }
 
-    public static Engine engine = null;
+    public Engine engine = null;
 
     //funkcje pomocnicze
     public static void log(String l) {
@@ -39,7 +40,7 @@ public class App {
         log(l + " = " + f);
     }
 
-    private static void echo(String e) {
+    private void echo(String e) {
         if (echos.length() == 0) {
             for (int i = 0; i < Config.geti().echo_spaces; i++) {
                 echos += ' ';
@@ -50,17 +51,17 @@ public class App {
         }
     }
 
-    public static void info(String e) {
+    public void info(String e) {
         echo(e);
         log("[INFO] " + e);
     }
 
-    public static void error(String e) {
+    public void error(String e) {
         echo("[ERROR] " + e);
         log("[ERROR] " + e);
     }
 
-    public static void errorCritical(String e) {
+    public void errorCritical(String e) {
         if (engine == null || engine.activity == null) {
             error("errorCritical: Brak activity");
             return;
@@ -80,7 +81,7 @@ public class App {
         log("[CRITICAL ERROR] " + e);
     }
 
-    public static String echo_show() {
+    public String echo_show() {
         String old_echos = echos;
         if (echos.length() > 0) {
             echos = echos.substring(1);
