@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.hardware.Sensor;
 
 public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
-    GraphicsEngine graphics = null;
+    Graphics graphics = null;
     Activity activity = null;
     TimeMaster timer = null;
     SensorMaster sensormaster = null;
@@ -17,7 +17,7 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         app = App.reset();
         App.engine = this;
         this.activity = activity;
-        graphics = new GraphicsEngine(activity, this);
+        graphics = new Graphics(activity, this);
         sensormaster = new SensorMaster(activity);
         buttons = new Buttons();
         config = Config.geti();
@@ -221,22 +221,6 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
             suma += (tab[i] - srednia) * (tab[i] - srednia);
         }
         return (float) Math.sqrt(suma / app.plot.recorded);
-    }
-
-    float max(float tab[]) {
-        float max = tab[0];
-        for (int i = config.plot_buffer_size - app.plot.recorded; i < config.plot_buffer_size; i++) {
-            if (tab[i] > max) max = tab[i];
-        }
-        return max;
-    }
-
-    float min(float tab[]) {
-        float min = tab[0];
-        for (int i = config.plot_buffer_size - app.plot.recorded; i < config.plot_buffer_size; i++) {
-            if (tab[i] < min) min = tab[i];
-        }
-        return min;
     }
 
     void set_mode(App.Mode mode) {

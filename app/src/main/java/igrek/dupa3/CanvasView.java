@@ -86,18 +86,18 @@ public class CanvasView extends View {
         //domyślne wartości
         if ((align & 0x0f) == 0) align |= Align.LEFT;
         if ((align & 0xf0) == 0) align |= Align.TOP;
-        if ((align & 0x0f) == Align.HCENTER) {
-            paint.setTextAlign(Paint.Align.CENTER);
-        } else if ((align & 0x0f) == Align.RIGHT) {
-            paint.setTextAlign(Paint.Align.RIGHT);
-        } else {
+        if (App.isFlagSet(align, Align.LEFT)) {
             paint.setTextAlign(Paint.Align.LEFT);
+        } else if (App.isFlagSet(align, Align.HCENTER)) {
+            paint.setTextAlign(Paint.Align.CENTER);
+        } else { //right
+            paint.setTextAlign(Paint.Align.RIGHT);
         }
         paint.getTextBounds(text, 0, text.length(), textBounds);
         float y_pos = cy - (paint.descent() + paint.ascent()) / 2;
-        if ((align & 0xf0) == Align.TOP) {
+        if (App.isFlagSet(align, Align.TOP)) {
             y_pos += textBounds.height() / 2;
-        } else if ((align & 0xf0) == Align.BOTTOM) {
+        } else if (App.isFlagSet(align, Align.BOTTOM)) {
             y_pos -= textBounds.height() / 2;
         }
         canvas.drawText(text, cx, y_pos, paint);

@@ -3,11 +3,11 @@ package igrek.dupa3;
 import android.content.Context;
 import android.hardware.Sensor;
 
-public class GraphicsEngine extends CanvasView {
+public class Graphics extends CanvasView {
     App app;
     Config config;
 
-    public GraphicsEngine(Context context, TouchPanel engine) {
+    public Graphics(Context context, TouchPanel engine) {
         super(context, engine);
         app = App.geti();
         config = Config.geti();

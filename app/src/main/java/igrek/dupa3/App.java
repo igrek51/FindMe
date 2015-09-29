@@ -1,6 +1,5 @@
 package igrek.dupa3;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.util.Log;
@@ -40,10 +39,6 @@ public class App {
         log(l + " = " + f);
     }
 
-    public static void log() {
-        log("Dupa");
-    }
-
     private static void echo(String e) {
         if (echos.length() == 0) {
             for (int i = 0; i < Config.geti().echo_spaces; i++) {
@@ -53,6 +48,11 @@ public class App {
         } else {
             echos = echos + " ::: " + e;
         }
+    }
+
+    public static void info(String e) {
+        echo(e);
+        log("[INFO] " + e);
     }
 
     public static void error(String e) {
@@ -80,25 +80,6 @@ public class App {
         log("[CRITICAL ERROR] " + e);
     }
 
-    public static void info(String e) {
-        echo(e);
-        log("[INFO] " + e);
-    }
-
-    public static void infoMessage(String e) {
-        if (engine == null || engine.activity == null) {
-            error("infoMessage: Brak activity");
-            return;
-        }
-        AlertDialog.Builder dlgAlert = new AlertDialog.Builder(engine.activity);
-        dlgAlert.setMessage(e);
-        dlgAlert.setTitle("Info");
-        dlgAlert.setPositiveButton("OK", null);
-        dlgAlert.setCancelable(true);
-        dlgAlert.create().show();
-        log("[INFO Message] " + e);
-    }
-
     public static String echo_show() {
         String old_echos = echos;
         if (echos.length() > 0) {
@@ -123,12 +104,8 @@ public class App {
         return Math.round(number * multip) / multip;
     }
 
-    public static float round(float number) {
-        return round(number, 0);
-    }
-
-    public static double round(double number) {
-        return round(number, 0);
+    public static boolean isFlagSet(int tested, int flag){
+        return (tested & flag) == flag;
     }
 
     //zmienne aplikacji
@@ -151,6 +128,4 @@ public class App {
 
     int sensor_type = 0;
     int sensor_axis = 0;
-    boolean sensor_accelerometer_enabled = false;
-    boolean sensor_magnetic_enabled = false;
 }

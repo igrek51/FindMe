@@ -44,11 +44,6 @@ public class SensorMaster implements SensorEventListener {
         App.log("Dostępne sensory: " + msensorList.size());
         // Print each Sensor available using sSensList as the String to be printed
         for (Sensor sensorZListy : msensorList) {
-            if (sensorZListy.getType() == Sensor.TYPE_ACCELEROMETER) {
-                App.geti().sensor_accelerometer_enabled = true;
-            } else if (sensorZListy.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
-                App.geti().sensor_magnetic_enabled = true;
-            }
             App.log("Sensor: " + sensorZListy.getName() + ", typ: " + sensorZListy.getType() + ", moc: " + sensorZListy.getPower() + ", rozdzielczosc: " + sensorZListy.getResolution());
         }
     }
