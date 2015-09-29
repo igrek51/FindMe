@@ -33,7 +33,7 @@ public class Config {
     public final int button_padding_h = 5;
     public final int button_padding_v = 2;
     public final int button_space_h = 0;
-    public final int button_space_v = 10;
+    public final int button_space_v = 8;
     public final int button_height = 21;
     //  CZCIONKI
     public final int fontsize = 15;

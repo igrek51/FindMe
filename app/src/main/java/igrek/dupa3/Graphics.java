@@ -83,7 +83,7 @@ public class Graphics extends CanvasView {
                 drawText(engine.sensormaster.get_units(), 0, 0);
                 for (int i = 0; i < config.plot_sections + 2; i++) {
                     //linia pomocnicza
-                    setColor("002000");
+                    setColor("282828");
                     float ypos = (1 - (float) i / 8) * plot_offset;
                     if (i > 0) drawLine(0, ypos, w, ypos);
                     //wartość pomocnicza
