@@ -5,7 +5,7 @@ android {
     buildToolsVersion "23.0.0"
 
     defaultConfig {
-        applicationId "igrek.dupa3"
+        applicationId "igrek.findme"
         minSdkVersion 10
         targetSdkVersion 16
         versionCode 1

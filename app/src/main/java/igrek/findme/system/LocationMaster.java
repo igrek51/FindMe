@@ -19,12 +19,12 @@ public class LocationMaster implements LocationListener, GpsStatus.Listener, Gps
         this.activity = activity;
         locationManager = (LocationManager) activity.getSystemService(activity.LOCATION_SERVICE);
         if (locationManager == null) {
-            Output.errorCritical("Błąd usługi lokacji");
+            Output.errorCritical("Błąd usługi lokalizacji");
             return;
         }
-        Output.log("All providers:");
+        Output.info("Available providers:");
         for (String provider : locationManager.getAllProviders()) {
-            Output.log(provider);
+            Output.info(provider);
         }
         try {
             locationManager.addGpsStatusListener(this);
@@ -36,7 +36,7 @@ public class LocationMaster implements LocationListener, GpsStatus.Listener, Gps
         } catch (RuntimeException ex) {
             Output.error(ex);
         }
-        Output.log("Moduł lokacji uruchomiony.");
+        Output.info("Moduł lokalizacji uruchomiony.");
     }
 
     public String gpsStatusToString(int gpsstatus) {
@@ -54,7 +54,7 @@ public class LocationMaster implements LocationListener, GpsStatus.Listener, Gps
 
     @Override
     public void onGpsStatusChanged(int event) {
-        Output.log("GpsStatusChanged: " + gpsStatusToString(event));
+        Output.info("GpsStatusChanged: " + gpsStatusToString(event));
         if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS || event == GpsStatus.GPS_EVENT_FIRST_FIX) {
             GpsStatus status = locationManager.getGpsStatus(null);
             Output.log("Time to first fix: " + status.getTimeToFirstFix());
@@ -79,8 +79,9 @@ public class LocationMaster implements LocationListener, GpsStatus.Listener, Gps
 
     @Override
     public void onLocationChanged(Location loc) {
-        String details = "onLocationChanged - ";
-        details += "provider: "+loc.getProvider();
+        Output.info("LocationChanged");
+        String details = "";
+        details += "Provider: "+loc.getProvider();
         details += ", accuracy: "+loc.getAccuracy();
         details += ", Time: "+loc.getTime();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
@@ -95,20 +96,20 @@ public class LocationMaster implements LocationListener, GpsStatus.Listener, Gps
 
     @Override
     public void onProviderDisabled(String provider) {
-        Output.log("onProviderDisabled: " + provider);
+        Output.info("ProviderDisabled: " + provider);
     }
 
     @Override
     public void onProviderEnabled(String provider) {
-        Output.log("onProviderEnabled: " + provider);
+        Output.info("ProviderEnabled: " + provider);
     }
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-        Output.log("onStatusChanged: " + provider + ", status: " + status);
+        Output.info("StatusChanged: " + provider + ", status: " + status);
         for (String key : extras.keySet()) {
             Object value = extras.get(key);
-            Output.log("extras key: " + key + " = " + value.toString() + ", type: " + value.getClass().getName());
+            Output.info("extras key: " + key + " = " + value.toString() + ", type: " + value.getClass().getName());
         }
     }
 

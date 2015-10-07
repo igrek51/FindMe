@@ -25,8 +25,8 @@ public class Output {
         log(l + " = " + f);
     }
 
-    //  OUTPUT na ekran
-    private static void echo(String e) {
+    //  OUTPUT na ekran w jednej linii
+    private static void echoOneline(String e) {
         if (echos.length() == 0) {
             for (int i = 0; i < Config.geti().echo_spaces; i++) {
                 echos += ' ';
@@ -38,17 +38,17 @@ public class Output {
     }
 
     public static void info(String e) {
-        echo(e);
+        echoMultiline(e);
         log("[INFO] " + e);
     }
 
     public static void error(String e) {
-        echo("[ERROR] " + e);
+        echoMultiline("[ERROR] " + e);
         log("[ERROR] " + e);
     }
 
     public static void error(Exception ex) {
-        error("[Exception - "+ex.getClass().getName()+"] " + ex.getMessage());
+        error("[Exception - " + ex.getClass().getName() + "] " + ex.getMessage());
     }
 
     public static void errorCritical(String e) {
@@ -79,5 +79,33 @@ public class Output {
         return old_echos;
     }
 
+    private static void echoMultiline(String e){
+        if(echos.length()==0){
+            echos = e;
+        }else{
+            echos += "\n" + e;
+        }
+        lastEcho = System.currentTimeMillis();
+    }
+
+    public static void echoTryClear() {
+        if(System.currentTimeMillis() > lastEcho + Config.geti().echo_showtime){
+            echoClear1();
+            lastEcho = System.currentTimeMillis();
+        }
+    }
+
+    public static void echoClear1() {
+        if (echos.length() == 0) return;
+        //usuwa 1 wpis z echo
+        int firstIndex = echos.indexOf("\n");
+        if (firstIndex == -1) {
+            echos = "";
+        } else {
+            echos = echos.substring(firstIndex+1);
+        }
+    }
+
     public static String echos = "";
+    public static long lastEcho = 0;
 }

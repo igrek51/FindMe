@@ -21,6 +21,7 @@ public class Config {
     //  OUTPUT
     public final String logTag = "AppLog";
     public final int echo_spaces = 40;
+    public final int echo_showtime = 2000; //[ms]
     //  SCREEN
     public final int fullscreen_flag = WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
     public final boolean fullscreen = true;
@@ -42,7 +43,7 @@ public class Config {
     public class Colors {
         public final int background = 0x000000;
         public final int text = 0x00f000;
-        public final int signature = 0x003000;
+        public final int signature = 0x006000;
         public final int buttons_background = 0xa0303030;
         public final int buttons_outline = 0xa0606060;
         public final int buttons_text = 0xa0f0f0f0;

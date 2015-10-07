@@ -39,9 +39,10 @@ public class Graphics extends CanvasView {
     }
 
     public void drawEcho() {
-        setColor("00ff00");
+        setColor(Config.geti().colors.text);
         setFont();
-        drawText(Output.echoShow(), 0, 0);
+        Output.echoTryClear();
+        drawTextMultiline(Output.echos, 0, 0, Config.geti().lineheight, Types.Align.LEFT);
     }
 
     public void drawButtons() {
