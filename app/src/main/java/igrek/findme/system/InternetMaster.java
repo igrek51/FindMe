@@ -12,11 +12,11 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class InternetMaster {
-    public boolean received = false;
-    public boolean send = false;
-    public String response = "";
+    private List<InternetTask> tasks;
 
     public InternetMaster(Activity activity) {
         ConnectivityManager connMgr = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -38,25 +38,24 @@ public class InternetMaster {
         if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
             Output.log("dane pakietowe dostępne.");
         }
-        Output.log("Łączę...");
-        new DownloadWebpageTask().execute(stringUrl);
+        tasks = new ArrayList<>();
     }
 
-    private class DownloadWebpageTask extends AsyncTask<String, Void, String> {
+    private class DownloadTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
-            // params comes from the execute() call: params[0] is the url.
             try {
                 return downloadUrl(urls[0]);
             } catch (IOException e) {
-                return "Unable to retrieve web page. URL may be invalid.";
+                Output.error(e);
+                return "";
             }
         }
 
-        // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
             Output.log("Odpowiedź: " + result);
+
         }
     }
 
@@ -78,7 +77,7 @@ public class InternetMaster {
             Output.log("The response is: " + response);
             is = conn.getInputStream();
             // Convert the InputStream into a string
-            String contentAsString = readIt(is, len);
+            String contentAsString = readInputStream(is, len);
             return contentAsString;
             // Makes sure that the InputStream is closed after the app is
             // finished using it.
@@ -90,9 +89,9 @@ public class InternetMaster {
     }
 
     // Reads an InputStream and converts it to a String.
-    public String readIt(InputStream stream, int len) throws IOException, UnsupportedEncodingException {
+    public String readInputStream(InputStream stream, int maxlen) throws IOException, UnsupportedEncodingException {
         Reader reader = null;
-        char[] buffer = new char[len];
+        char[] buffer = new char[maxlen];
         if (reader != null) {
             reader.read(buffer);
         }
@@ -102,4 +101,32 @@ public class InternetMaster {
     //TODO: funkcja wysyłania pakietów do podaneg URL
 
     //TODO: funkcja odbierania danych z URL
+    public void download(String url) {
+        Output.log("Łączę...");
+        new DownloadTask().execute(url);
+    }
+
+    private class InternetTask {
+        public InternetTask(String name, String url){
+            this.name = name;
+            this.url = url;
+        }
+        String name;
+        String url;
+        String response = "";
+        boolean ready = false;
+        boolean error = false;
+    }
+
+    public void addTask(String name, String url) {
+
+    }
+
+    public boolean isReady(String name) {
+
+    }
+
+    public String getResponse(String name) {
+
+    }
 }
