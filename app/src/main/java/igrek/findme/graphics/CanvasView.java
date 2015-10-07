@@ -1,17 +1,22 @@
-package igrek.dupa3;
+package igrek.findme.graphics;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.view.MotionEvent;
 import android.view.View;
+
+import igrek.findme.logic.Types;
+import igrek.findme.logic.Engine;
 
 public class CanvasView extends View {
     public int w, h;
     Paint paint;
-    Canvas canvas = null;
+    private Canvas canvas = null;
     Engine engine;
 
     public CanvasView(Context context, Engine engine) {
@@ -68,34 +73,24 @@ public class CanvasView extends View {
     }
 
     //pomocnicze funkcje rysujące
-    Rect textBounds = new Rect();
-
-    public class Align {
-        static final int LEFT = 0x01;
-        static final int RIGHT = 0x02;
-        static final int HCENTER = 0x04;
-        static final int TOP = 0x10;
-        static final int BOTTOM = 0x20;
-        static final int VCENTER = 0x40;
-        static final int CENTER = HCENTER | VCENTER;
-    }
+    private Rect textBounds = new Rect();
 
     public void drawText(String text, float cx, float cy, int align) {
         //domyślne wartości
-        if ((align & 0x0f) == 0) align |= Align.LEFT;
-        if ((align & 0xf0) == 0) align |= Align.TOP;
-        if (App.isFlagSet(align, Align.LEFT)) {
+        if ((align & 0x0f) == 0) align |=  Types.Align.LEFT;
+        if ((align & 0xf0) == 0) align |=  Types.Align.TOP;
+        if (Types.isFlagSet(align, Types.Align.LEFT)) {
             paint.setTextAlign(Paint.Align.LEFT);
-        } else if (App.isFlagSet(align, Align.HCENTER)) {
+        } else if (Types.isFlagSet(align,  Types.Align.HCENTER)) {
             paint.setTextAlign(Paint.Align.CENTER);
         } else { //right
             paint.setTextAlign(Paint.Align.RIGHT);
         }
         paint.getTextBounds(text, 0, text.length(), textBounds);
         float y_pos = cy - (paint.descent() + paint.ascent()) / 2;
-        if (App.isFlagSet(align, Align.TOP)) {
+        if (Types.isFlagSet(align, Types.Align.TOP)) {
             y_pos += textBounds.height() / 2;
-        } else if (App.isFlagSet(align, Align.BOTTOM)) {
+        } else if (Types.isFlagSet(align, Types.Align.BOTTOM)) {
             y_pos -= textBounds.height() / 2;
         }
         canvas.drawText(text, cx, y_pos, paint);
@@ -110,6 +105,34 @@ public class CanvasView extends View {
         return textBounds.width();
     }
 
+    public void setFontSize(int textsize){
+        paint.setTextSize(textsize);
+    }
+
+    public void setFont(int fontface){
+        //domyślna rodzina
+        if((fontface & 0x0f) == 0) fontface |= Types.Font.FONT_DEFAULT;
+        //domyślny styl
+        if((fontface & 0xf0) == 0) fontface |= Types.Font.FONT_NORMAL;
+        Typeface family;
+        if(Types.isFlagSet(fontface, Types.Font.FONT_MONOSPACE)){
+            family = Typeface.MONOSPACE;
+        }else{
+            family = Typeface.DEFAULT;
+        }
+        int style;
+        if(Types.isFlagSet(fontface, Types.Font.FONT_BOLD)){
+            style = Typeface.BOLD;
+        }else{
+            style = Typeface.NORMAL;
+        }
+        paint.setTypeface(Typeface.create(family, style));
+    }
+
+    public void setFont(){
+        setFont(0); //reset czcionki na zwykłą
+    }
+
     public void setColor(String color) {
         if (color.length() > 0 && color.charAt(0) != '#') {
             color = "#" + color;
@@ -117,14 +140,24 @@ public class CanvasView extends View {
         paint.setColor(Color.parseColor(color));
     }
 
-    public void clearCanvas() {
+    public void setColor(int color) {
+        //jeśli kanał alpha jest zerowy (nie ustawiony) - ustaw na max
+        if((color & 0xff000000) == 0) color |= 0xff000000;
+        paint.setColor(color);
+    }
+
+    public void setColor(int rgb, int alpha) {
+        paint.setColor(rgb | (alpha<<24));
+    }
+
+    public void clearScreen() {
         paint.setStyle(Paint.Style.FILL);
         canvas.drawPaint(paint);
     }
 
-    public void clearCanvas(String color) {
+    public void clearScreen(String color) {
         setColor(color);
-        clearCanvas();
+        clearScreen();
     }
 
     public void drawLine(float startx, float starty, float stopx, float stopy){
@@ -146,6 +179,16 @@ public class CanvasView extends View {
     public void fillRect(float left, float top, float right, float bottom){
         paint.setStyle(Paint.Style.FILL);
         canvas.drawRect(left, top, right, bottom, paint);
+    }
+
+    public void fillRoundRect(float left, float top, float right, float bottom, float radius){
+        paint.setStyle(Paint.Style.FILL);
+        RectF rectf = new RectF(left, top, right, bottom);
+        canvas.drawRoundRect(rectf, radius, radius, paint);
+    }
+
+    public void fillRoundRectWH(float left, float top, float width, float height, float radius){
+        fillRoundRect(left, top, left + width, top + height, radius);
     }
 
     public void outlineRect(float left, float top, float right, float bottom, float thickness){

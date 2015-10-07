@@ -1,4 +1,4 @@
-package igrek.dupa3;
+package igrek.findme.graphics;
 
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -6,23 +6,12 @@ import android.graphics.Rect;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Buttons {
-    List<Button> buttons = new ArrayList<Button>();
+import igrek.findme.logic.Types;
+import igrek.findme.settings.Config;
+import igrek.findme.system.Output;
 
-    public class Align {
-        //pozycja
-        static final int LEFT = 0x001;
-        static final int RIGHT = 0x002;
-        static final int HCENTER = 0x004;
-        static final int TOP = 0x010;
-        static final int BOTTOM = 0x020;
-        static final int VCENTER = 0x040;
-        static final int CENTER = HCENTER | VCENTER;
-        //rozmiar
-        static final int HADJUST = 0x100;
-        static final int VADJUST = 0x200;
-        static final int ADJUST = HADJUST | VADJUST;
-    }
+public class Buttons {
+    public List<Button> buttons = new ArrayList<>();
 
     public class Button {
         public Button(String text, String id, float x, float y, float w, float h) {
@@ -43,26 +32,26 @@ public class Buttons {
                 paint2.setTextSize(Config.geti().buttons_fontsize);
                 Rect textBounds = new Rect();
                 paint2.getTextBounds(text, 0, text.length(), textBounds);
-                if (App.isFlagSet(align, Align.HADJUST)) {
+                if (Types.isFlagSet(align,  Types.Align.HADJUST)) {
                     this.w = textBounds.width() + 2 * Config.geti().button_padding_h;
                 }
-                if (App.isFlagSet(align, Align.VADJUST)) {
+                if (Types.isFlagSet(align, Types.Align.VADJUST)) {
                     this.h = textBounds.height() + 2 * Config.geti().button_padding_v;
                 }
             }
             //domyślne wartości
-            if ((align & 0x0f) == 0) align |= Align.LEFT;
-            if ((align & 0xf0) == 0) align |= Align.TOP;
-            if (App.isFlagSet(align, Align.LEFT)) {
+            if ((align & 0x0f) == 0) align |=  Types.Align.LEFT;
+            if ((align & 0xf0) == 0) align |=  Types.Align.TOP;
+            if (Types.isFlagSet(align,  Types.Align.LEFT)) {
                 this.x = x;
-            } else if (App.isFlagSet(align, Align.HCENTER)) {
+            } else if (Types.isFlagSet(align,  Types.Align.HCENTER)) {
                 this.x = x - this.w / 2;
             } else { //right
                 this.x = x - this.w;
             }
-            if (App.isFlagSet(align, Align.TOP)) {
+            if (Types.isFlagSet(align,  Types.Align.TOP)) {
                 this.y = y;
-            } else if (App.isFlagSet(align, Align.VCENTER)) {
+            } else if (Types.isFlagSet(align,  Types.Align.VCENTER)) {
                 this.y = y - this.h / 2;
             } else { //bottom
                 this.y = y - this.h;
@@ -76,8 +65,7 @@ public class Buttons {
 
         public boolean isInRect(float touch_x, float touch_y) {
             if (touch_x < x || touch_y < y) return false;
-            if (touch_x > x + w || touch_y > y + h) return false;
-            return true;
+            return !(touch_x > x + w || touch_y > y + h);
         }
 
         public float x, y;
@@ -107,7 +95,7 @@ public class Buttons {
         for (Button b : buttons) {
             if (b.id.equals(id)) return b;
         }
-        App.geti().error("Nie znaleziono przycisku o nazwie: " + id);
+        Output.error("Nie znaleziono przycisku o nazwie: " + id);
         return null;
     }
 
@@ -123,14 +111,27 @@ public class Buttons {
         }
     }
 
-    public void checkClicked(float touch_x, float touch_y) {
+    public boolean checkClicked(float touch_x, float touch_y) {
         for (Button b : buttons) {
             if (b.active) {
                 if (b.isInRect(touch_x, touch_y)) {
                     b.clicked = true;
+                    return true;
                 }
             }
         }
+        return false;
+    }
+
+    public boolean checkClickedNoAction(float touch_x, float touch_y) {
+        for (Button b : buttons) {
+            if (b.active) {
+                if (b.isInRect(touch_x, touch_y)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public boolean isClicked() {

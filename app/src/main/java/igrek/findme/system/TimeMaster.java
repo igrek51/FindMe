@@ -1,7 +1,10 @@
-package igrek.dupa3;
+package igrek.findme.system;
 
 import java.util.Timer;
 import java.util.TimerTask;
+
+import igrek.findme.logic.Engine;
+import igrek.findme.settings.Config;
 
 public class TimeMaster {
     //metoda run do zaimplementowania
@@ -9,10 +12,10 @@ public class TimeMaster {
         void timer_run();
     }
 
-    MasterOfTime master_of_time = null;
-    Timer timer = null;
-    TimerTask timerTask = null;
-    int interval; //ms
+    private MasterOfTime master_of_time = null;
+    private Timer timer = null;
+    private TimerTask timerTask = null;
+    private int interval; //ms
 
     public TimeMaster(MasterOfTime master_of_time, int interval) {
         this.master_of_time = master_of_time;

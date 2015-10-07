@@ -1,14 +1,19 @@
-package igrek.dupa3;
+package igrek.findme;
 
 import android.content.res.Configuration;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
+
+import igrek.findme.logic.Engine;
+import igrek.findme.settings.Config;
+import igrek.findme.system.Output;
 
 public class MainActivity extends AppCompatActivity {
-    Engine engine = null;
+    private Engine engine = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +26,9 @@ public class MainActivity extends AppCompatActivity {
         if (Config.geti().fullscreen) {
             getWindow().setFlags(Config.geti().fullscreen_flag, Config.geti().fullscreen_flag);
         }
+        if(Config.geti().keep_screen_on) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
         engine = new Engine(this);
         setContentView(engine.graphics);
     }
@@ -30,9 +38,9 @@ public class MainActivity extends AppCompatActivity {
         super.onConfigurationChanged(newConfig);
         // Checks the orientation of the screen
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            App.log("orientation: landscape");
+            Output.log("orientation changed: landscape");
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            App.log("orientation: portrait");
+            Output.log("orientation changed: portrait");
         }
     }
 
@@ -51,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         engine.quit();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         super.onDestroy();
     }
 
@@ -64,10 +73,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if(engine.options_select(id)){
-            return true; //event obsłużony
-        }
-        return super.onOptionsItemSelected(item);
+        //event obsłużony lub przekazany dalej
+        return engine.options_select(id) || super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -75,6 +82,16 @@ public class MainActivity extends AppCompatActivity {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             engine.keycode_back();
             return true;
+        }else if (keyCode == KeyEvent.KEYCODE_MENU) {
+            engine.keycode_menu();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_MENU) {
+            return true; //przechwycenie klawisza menu
         }
         return super.onKeyDown(keyCode, event);
     }

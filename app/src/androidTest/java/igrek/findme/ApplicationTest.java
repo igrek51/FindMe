@@ -1,4 +1,4 @@
-package igrek.dupa3;
+package igrek.findme;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
