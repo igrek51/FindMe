@@ -13,8 +13,6 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 import igrek.findme.settings.Config;
 
@@ -26,8 +24,9 @@ public class InternetMaster {
             return;
         }
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (networkInfo == null || !networkInfo.isConnected()) {
+        if (networkInfo == null) {
             Output.error("Błąd połączenia z internetem");
+            return;
         }
         Output.log("networkInfo.isAvailable() = " + networkInfo.isAvailable());
         Output.log("networkInfo.isConnected() = " + networkInfo.isConnected());
@@ -126,8 +125,8 @@ public class InternetMaster {
     public String readInputStream(InputStream stream, int maxlen) throws IOException, UnsupportedEncodingException {
         Reader reader = new InputStreamReader(stream, "UTF-8");
         char[] buffer = new char[maxlen];
-        reader.read(buffer);
-        return new String(buffer);
+        int characters = reader.read(buffer);
+        return (new String(buffer)).substring(0, characters);
     }
 
     public InternetTask download(String url) {

@@ -12,8 +12,6 @@ import android.view.View;
 
 import igrek.findme.logic.Types;
 import igrek.findme.logic.Engine;
-import igrek.findme.settings.Config;
-import igrek.findme.system.Output;
 
 public class CanvasView extends View {
     public int w, h;
@@ -127,7 +125,7 @@ public class CanvasView extends View {
             if (indexn == -1) indexn = text.length(); //nie było już \n
             //wycięcie wiersza
             String row_text = text.substring(0, indexn);
-            if (indexn + 1 < text.length()) {
+            if (indexn < text.length()) {
                 text = text.substring(indexn + 1); //usunięcie wyciętego wiersza i \n
             }
             //narysowanie 1 wiersza

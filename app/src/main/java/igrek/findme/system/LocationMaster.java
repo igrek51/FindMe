@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import igrek.findme.logic.Types;
+import igrek.findme.settings.Config;
 
 public class LocationMaster implements LocationListener, GpsStatus.Listener, GpsStatus.NmeaListener {
     Activity activity = null;
@@ -30,10 +31,10 @@ public class LocationMaster implements LocationListener, GpsStatus.Listener, Gps
             locationManager.addGpsStatusListener(this);
             locationManager.addNmeaListener(this);
             if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Config.geti().location.min_updates_time, Config.geti().location.min_updates_distance, this);
             }
             if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, Config.geti().location.min_updates_time, Config.geti().location.min_updates_distance, this);
             }
         } catch (SecurityException | IllegalArgumentException ex) {
             Output.error(ex);
@@ -61,7 +62,9 @@ public class LocationMaster implements LocationListener, GpsStatus.Listener, Gps
         Output.info("GpsStatusChanged: " + gpsStatusToString(event));
         if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS || event == GpsStatus.GPS_EVENT_FIRST_FIX) {
             GpsStatus status = locationManager.getGpsStatus(null);
-            Output.info("Time to first fix: " + status.getTimeToFirstFix());
+            if(status.getTimeToFirstFix()!=0){
+                Output.info("Time to first fix: " + status.getTimeToFirstFix());
+            }
             Iterable<GpsSatellite> sats = status.getSatellites();
             int satellites = 0;
             Output.log("Satelity:");

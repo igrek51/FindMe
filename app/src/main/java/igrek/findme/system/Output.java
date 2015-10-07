@@ -39,7 +39,7 @@ public class Output {
 
     public static void info(String e) {
         echoMultiline(e);
-        log("[INFO] " + e);
+        log("[info] " + e);
     }
 
     public static void error(String e) {
@@ -84,16 +84,16 @@ public class Output {
     private static void echoMultiline(String e) {
         if (echos.length() == 0) {
             echos = e;
+            lastEcho = System.currentTimeMillis();
         } else {
             echos += "\n" + e;
         }
-        lastEcho = System.currentTimeMillis();
     }
 
     public static void echoTryClear() {
         if (System.currentTimeMillis() > lastEcho + Config.geti().echo_showtime) {
             echoClear1();
-            lastEcho = System.currentTimeMillis();
+            lastEcho += Config.geti().echo_showtime;
         }
     }
 

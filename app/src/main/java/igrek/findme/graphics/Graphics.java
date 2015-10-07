@@ -53,11 +53,11 @@ public class Graphics extends CanvasView {
 
     public void draw(Buttons.Button b) {
         if (!b.active) return;
-        setColor(config.colors.buttons_background);
+        setColor(config.colors.buttons_background, config.colors.buttons_alpha);
         fillRect(b.x, b.y, b.x + b.w, b.y + b.h);
-        setColor(config.colors.buttons_outline);
+        setColor(config.colors.buttons_outline, config.colors.buttons_alpha);
         outlineRect(b.x, b.y, b.x + b.w, b.y + b.h, 2);
-        setColor(config.colors.buttons_text);
+        setColor(config.colors.buttons_text, config.colors.buttons_alpha);
         paint.setTextSize(config.buttons_fontsize);
         setFont();
         drawText(b.text, b.x + b.w / 2, b.y + b.h / 2, Types.Align.CENTER);

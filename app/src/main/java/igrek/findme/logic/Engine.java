@@ -5,6 +5,7 @@ import android.app.Activity;
 import java.util.Random;
 
 import igrek.findme.settings.Preferences;
+import igrek.findme.system.InternetMaster;
 import igrek.findme.system.LocationMaster;
 import igrek.findme.system.Output;
 import igrek.findme.system.SensorMaster;
@@ -27,6 +28,8 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
     Control control = null;
     public SensorMaster sensormaster;
     public LocationMaster locationmaster;
+    public InternetMaster internetmaster;
+    public InternetMaster.InternetTask internetTask1;
     public Preferences preferences;
     boolean init = false;
     boolean running = true;
@@ -43,6 +46,7 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         random = new Random();
         sensormaster = new SensorMaster(activity);
         locationmaster = new LocationMaster(activity);
+        internetmaster = new InternetMaster(activity);
         Output.log("Utworzenie aplikacji.");
     }
 
@@ -59,8 +63,11 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         Output.log("Inicjalizacja (po starcie grafiki).");
         touchpanel = new TouchPanel(this, graphics.w, graphics.h);
         control = new Control(this);
-        //przyciski do nawigacji po ekranach
-        //buttons.add("Wyjdź", "exit", graphics.w, graphics.h, 0, 0, Buttons.HADJUST | Buttons.RIGHT | Buttons.BOTTOM);
+        //przyciski
+        buttons.add("Wyjdź", "exit", graphics.w, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.RIGHT | Types.Align.BOTTOM);
+        buttons.add("Czyść", "clear", graphics.w/2, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.BOTTOM);
+        Buttons.Button b = buttons.add("SQL GET", "sql_get", 0, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.LEFT | Types.Align.BOTTOM);
+        buttons.add("GET", "get", 0, graphics.h - b.h, 0, 0, Types.Align.HADJUST | Types.Align.LEFT | Types.Align.BOTTOM);
     }
 
     public void pause() {
@@ -88,11 +95,30 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         if (buttons.isClicked()) {
             buttonsExecute(buttons.clickedId());
         }
+        if (internetTask1 != null) {
+            if (internetTask1.isReady()) {
+                if (internetTask1.isCorrect()) {
+                    Output.info("Kod odpowiedzi: "+internetTask1.getResponseCode());
+                    Output.info("Odpowiedź: "+internetTask1.getResponse());
+                } else {
+                    Output.info("Błąd odbierania");
+                }
+                internetTask1 = null;
+            }
+        }
     }
 
     public void buttonsExecute(String bid) {
         if (bid.equals("exit")) {
             control.executeEvent(Types.ControlEvent.BACK);
+        } else if (bid.equals("clear")) {
+            Output.echos = "";
+        } else if (bid.equals("get")) {
+            internetTask1 = internetmaster.download("http://igrek.cba.pl/findme/get.php?name=dupa");
+            Output.info("Wysłano żądanie.");
+        } else if (bid.equals("sql_get")) {
+            internetTask1 = internetmaster.download("http://igrek.cba.pl/findme/getsql.php");
+            Output.info("Wysłano żądanie.");
         } else {
             Output.error("Nie obsłużono zdarzenia dla przycisku: " + bid);
         }

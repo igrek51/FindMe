@@ -21,32 +21,33 @@ public class Config {
     //  OUTPUT
     public final String logTag = "AppLog";
     public final int echo_spaces = 40;
-    public final int echo_showtime = 1500; //[ms]
+    public final int echo_showtime = 1800; //[ms]
     //  SCREEN
     public final int fullscreen_flag = WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
     public final boolean fullscreen = true;
     public final boolean hide_taskbar = true;
     public final boolean keep_screen_on = true;
     //  TIMER
-    public final int timer_interval0 = 130; //początkowy okres timera
-    public final int timer_fps0 = 0;
+    public final int timer_interval0 = 0;
+    public final int timer_fps0 = 10;
     //  BUTTONY
     public final int buttons_fontsize = 12;
     public final int button_padding_h = 10;
     public final int button_padding_v = 5;
     public final int button_height = 25;
     //  CZCIONKI
-    public final int fontsize = 15;
-    public final int lineheight = 16;
+    public final int fontsize = 12;
+    public final int lineheight = 13;
     //  KOLORY
     public final Colors colors = new Colors();
     public class Colors {
         public final int background = 0x000000;
         public final int text = 0x00f000;
-        public final int signature = 0x006000;
-        public final int buttons_background = 0xa0303030;
-        public final int buttons_outline = 0xa0606060;
-        public final int buttons_text = 0xa0f0f0f0;
+        public final int signature = 0x009000;
+        public final int buttons_background = 0x303030;
+        public final int buttons_outline = 0x606060;
+        public final int buttons_text = 0xf0f0f0;
+        public final int buttons_alpha = 0xb0;
     }
     //  PANEL DOTYKOWY
     public final Touch touch = new Touch();
@@ -70,5 +71,11 @@ public class Config {
         public final int max_response_size = 1024;
         public final int read_timeout = 10000; //[ms]
         public final int connect_timeout = 15000; //[ms]
+    }
+    //  LOKALIZACJA
+    public Location location = new Location();
+    public class Location {
+        public final int min_updates_time = 5000; //[ms]
+        public final int min_updates_distance = 0; //[m]
     }
 }
