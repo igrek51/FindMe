@@ -136,6 +136,10 @@ public class CanvasView extends View {
         }
     }
 
+    public void drawTextMultiline(String text, float cx, float cy, float lineheight) {
+        drawTextMultiline(text, cx, cy, lineheight, 0);
+    }
+
     public int getTextWidth(String text) {
         paint.getTextBounds(text, 0, text.length(), textBounds);
         return textBounds.width();

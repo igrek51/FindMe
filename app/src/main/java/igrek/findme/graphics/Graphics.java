@@ -35,14 +35,14 @@ public class Graphics extends CanvasView {
     public void drawSignature() {
         setColor(config.colors.signature);
         setFont(Types.Font.FONT_MONOSPACE);
-        drawText("Igrek", w, 0, Types.Align.RIGHT);
+        drawText("Igrek", w, h, Types.Align.BOTTOM_RIGHT);
     }
 
     public void drawEcho() {
         setColor(Config.geti().colors.text);
         setFont();
         Output.echoTryClear();
-        drawTextMultiline(Output.echos, 0, 0, Config.geti().lineheight, Types.Align.LEFT);
+        drawTextMultiline(Output.echos, 0, 0, Config.geti().lineheight);
     }
 
     public void drawButtons() {

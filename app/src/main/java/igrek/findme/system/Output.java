@@ -48,7 +48,9 @@ public class Output {
     }
 
     public static void error(Exception ex) {
-        error("[Exception - " + ex.getClass().getName() + "] " + ex.getMessage());
+        String ex_print = ex.getClass().getName() + "] " + ex.getMessage();
+        echoMultiline("[EXCEPTION] " + ex_print);
+        log("[EXCEPTION] " + ex_print);
     }
 
     public static void errorCritical(String e) {
@@ -79,17 +81,17 @@ public class Output {
         return old_echos;
     }
 
-    private static void echoMultiline(String e){
-        if(echos.length()==0){
+    private static void echoMultiline(String e) {
+        if (echos.length() == 0) {
             echos = e;
-        }else{
+        } else {
             echos += "\n" + e;
         }
         lastEcho = System.currentTimeMillis();
     }
 
     public static void echoTryClear() {
-        if(System.currentTimeMillis() > lastEcho + Config.geti().echo_showtime){
+        if (System.currentTimeMillis() > lastEcho + Config.geti().echo_showtime) {
             echoClear1();
             lastEcho = System.currentTimeMillis();
         }
@@ -102,7 +104,7 @@ public class Output {
         if (firstIndex == -1) {
             echos = "";
         } else {
-            echos = echos.substring(firstIndex+1);
+            echos = echos.substring(firstIndex + 1);
         }
     }
 

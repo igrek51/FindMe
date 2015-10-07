@@ -8,13 +8,16 @@ import android.os.AsyncTask;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class InternetMaster {
+    public boolean received = false;
+    public boolean send = false;
+    public String respond = "";
+
     public InternetMaster(Activity activity) {
         String stringUrl = "http://google.pl";
         ConnectivityManager connMgr = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);

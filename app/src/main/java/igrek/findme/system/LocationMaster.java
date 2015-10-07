@@ -29,8 +29,12 @@ public class LocationMaster implements LocationListener, GpsStatus.Listener, Gps
         try {
             locationManager.addGpsStatusListener(this);
             locationManager.addNmeaListener(this);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+            }
+            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+            }
         } catch (SecurityException | IllegalArgumentException ex) {
             Output.error(ex);
         } catch (RuntimeException ex) {
@@ -57,40 +61,41 @@ public class LocationMaster implements LocationListener, GpsStatus.Listener, Gps
         Output.info("GpsStatusChanged: " + gpsStatusToString(event));
         if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS || event == GpsStatus.GPS_EVENT_FIRST_FIX) {
             GpsStatus status = locationManager.getGpsStatus(null);
-            Output.log("Time to first fix: " + status.getTimeToFirstFix());
-            Output.log("Max Satellites: " + status.getMaxSatellites());
+            Output.info("Time to first fix: " + status.getTimeToFirstFix());
             Iterable<GpsSatellite> sats = status.getSatellites();
             int satellites = 0;
             Output.log("Satelity:");
             for (GpsSatellite sat : sats) {
                 satellites++;
                 String details = "";
-                details += "Satellite "+satellites+" - usedInFix: "+sat.usedInFix()+", azimuth: "+sat.getAzimuth()+", elevation: "+sat.getElevation()+", pseudoRandomNumber: "+sat.getPrn()+", signalToNoiseRatio: "+sat.getSnr();
-                details += ", Almanac: "+sat.hasAlmanac()+", Ephemeris: "+sat.hasEphemeris();
+                details += "Satellite " + satellites + " - usedInFix: " + sat.usedInFix() + ", azimuth: " + sat.getAzimuth() + ", elevation: " + sat.getElevation() + ", pseudoRandomNumber: " + sat.getPrn() + ", signalToNoiseRatio: " + sat.getSnr();
+                details += ", Almanac: " + sat.hasAlmanac() + ", Ephemeris: " + sat.hasEphemeris();
                 Output.log(details);
             }
+            Output.info("Liczba satelit: "+satellites);
         }
     }
 
     @Override
     public void onNmeaReceived(long timestamp, String nmea) {
-        Output.log("onNmeaReceived - timestamp: "+timestamp+", NMEA: "+nmea);
+        Output.info("NmeaReceived");
+        Output.log("timestamp: " + timestamp + ", NMEA: " + nmea);
     }
 
     @Override
     public void onLocationChanged(Location loc) {
-        Output.info("LocationChanged");
+        Output.info("LocChanged: "+loc.getLongitude()+", "+loc.getLatitude()+" ("+loc.getExtras().getInt("satellites")+", "+loc.getProvider()+")");
         String details = "";
-        details += "Provider: "+loc.getProvider();
-        details += ", accuracy: "+loc.getAccuracy();
-        details += ", Time: "+loc.getTime();
+        details += "Provider: " + loc.getProvider();
+        details += ", accuracy: " + loc.getAccuracy();
+        details += ", Time: " + loc.getTime();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            details += ", ElapsedRealtimeNanos: "+loc.getElapsedRealtimeNanos();
+            details += ", ElapsedRealtimeNanos: " + loc.getElapsedRealtimeNanos();
         }
-        details += ", Longitude: "+loc.getLongitude();
-        details += ", Latitude: "+loc.getLatitude();
-        details += ", Altitude: "+loc.getAltitude();
-        details += ", satellites used to derive the fix: "+loc.getExtras().getInt("satellites");
+        details += ", Longitude: " + loc.getLongitude();
+        details += ", Latitude: " + loc.getLatitude();
+        details += ", Altitude: " + loc.getAltitude();
+        details += ", satellites used to derive the fix: " + loc.getExtras().getInt("satellites");
         Output.log(details);
     }
 
@@ -106,7 +111,7 @@ public class LocationMaster implements LocationListener, GpsStatus.Listener, Gps
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-        Output.info("StatusChanged: " + provider + ", status: " + status);
+        Output.info("StatusChanged: " + provider + ", status: " + status + " ("+gpsStatusToString(status)+" ?)");
         for (String key : extras.keySet()) {
             Object value = extras.get(key);
             Output.info("extras key: " + key + " = " + value.toString() + ", type: " + value.getClass().getName());
@@ -130,7 +135,7 @@ public class LocationMaster implements LocationListener, GpsStatus.Listener, Gps
         }
         if (coordinate == Types.Coordinate.ALTITUDE) {
             if (!location.hasAltitude()) {
-                Output.error("location: brak altitude");
+                Output.error("location: no altitude");
                 return 0;
             }
             return location.getAltitude();
@@ -140,7 +145,7 @@ public class LocationMaster implements LocationListener, GpsStatus.Listener, Gps
             return location.getLongitude();
         } else if (coordinate == Types.Coordinate.ACCURACY) {
             if (!location.hasAccuracy()) {
-                Output.error("location: brak accuracy");
+                Output.error("location: no accuracy");
                 return 0;
             }
             return (double) location.getAccuracy();

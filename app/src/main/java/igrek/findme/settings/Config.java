@@ -21,7 +21,7 @@ public class Config {
     //  OUTPUT
     public final String logTag = "AppLog";
     public final int echo_spaces = 40;
-    public final int echo_showtime = 2000; //[ms]
+    public final int echo_showtime = 1500; //[ms]
     //  SCREEN
     public final int fullscreen_flag = WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
     public final boolean fullscreen = true;
