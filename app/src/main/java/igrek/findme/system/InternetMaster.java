@@ -16,11 +16,14 @@ import java.net.URL;
 public class InternetMaster {
     public boolean received = false;
     public boolean send = false;
-    public String respond = "";
+    public String response = "";
 
     public InternetMaster(Activity activity) {
-        String stringUrl = "http://google.pl";
         ConnectivityManager connMgr = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connMgr == null) {
+            Output.errorCritical("Błąd usługi połączenia");
+            return;
+        }
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         Output.log("networkInfo.isAvailable() = " + networkInfo.isAvailable());
         Output.log("networkInfo.isConnected() = " + networkInfo.isConnected());
