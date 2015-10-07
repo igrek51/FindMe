@@ -38,7 +38,7 @@ public class Config {
     //  CZCIONKI
     public final int fontsize = 15;
     public final int lineheight = 16;
-    //  KOLORKI
+    //  KOLORY
     public final Colors colors = new Colors();
     public class Colors {
         public final int background = 0x000000;
@@ -48,7 +48,6 @@ public class Config {
         public final int buttons_outline = 0xa0606060;
         public final int buttons_text = 0xa0f0f0f0;
     }
-
     //  PANEL DOTYKOWY
     public final Touch touch = new Touch();
     public class Touch {
@@ -65,4 +64,11 @@ public class Config {
     }
     //  USTAWIENIA UŻYTKOWNIKA
     public final String shared_preferences_name = "userpreferences";
+    //  INTERNET
+    public Connection connection = new Connection();
+    public class Connection {
+        public final int max_response_size = 1024;
+        public final int read_timeout = 10000; //[ms]
+        public final int connect_timeout = 15000; //[ms]
+    }
 }
