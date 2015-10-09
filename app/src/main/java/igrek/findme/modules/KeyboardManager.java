@@ -14,6 +14,7 @@ import android.widget.TextView;
 import igrek.findme.R;
 import igrek.findme.graphics.Graphics;
 import igrek.findme.settings.Config;
+import igrek.findme.system.Output;
 
 public class KeyboardManager {
     Graphics graphics;
@@ -65,6 +66,8 @@ public class KeyboardManager {
 
     public void setKeyboardVisible(boolean keyboard_shown) {
         this.keyboard_shown = keyboard_shown;
+        //Output.log("keyboard_shown: "+ keyboard_shown);
+        //Output.log("keyboard_actual_shown: "+ keyboard_actual_shown);
         if (keyboard_shown == keyboard_actual_shown) return;
         if (keyboard_shown) {
             imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_NOT_ALWAYS);

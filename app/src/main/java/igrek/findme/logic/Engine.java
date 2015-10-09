@@ -2,11 +2,14 @@ package igrek.findme.logic;
 
 import android.app.Activity;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Random;
 
 import igrek.findme.graphics.Buttons;
 import igrek.findme.graphics.CanvasView;
 import igrek.findme.graphics.Graphics;
+import igrek.findme.modules.FileManager;
 import igrek.findme.modules.InternetMaster;
 import igrek.findme.modules.KeyboardManager;
 import igrek.findme.modules.LocationMaster;
@@ -33,6 +36,7 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
     public InternetMaster.InternetTask internetTask1;
     public Preferences preferences;
     public KeyboardManager keyboardmanager;
+    public FileManager filemanager;
     boolean init = false;
     boolean running = true;
 
@@ -49,6 +53,7 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         sensormaster = new SensorMaster(activity);
         locationmaster = new LocationMaster(activity);
         internetmaster = new InternetMaster(activity);
+        filemanager = new FileManager(activity);
         Output.log("Utworzenie aplikacji.");
     }
 
@@ -69,9 +74,9 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         //przyciski
         Buttons.Button b;
         buttons.add("Wyjdź", "exit", graphics.w, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.RIGHT | Types.Align.BOTTOM);
-        buttons.add("Czyść", "clear", graphics.w / 2, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.BOTTOM);
-        b = buttons.add("Klawiatura", "keyboard_show", graphics.w/2, 0, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.TOP);
-        buttons.add("Ukryj", "keyboard_hide", graphics.w / 2, b.h, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.TOP);
+        b = buttons.add("Czyść", "clear", graphics.w / 2, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.BOTTOM);
+        buttons.add("Test plików", "files_test", graphics.w / 2, b.y - b.h, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.TOP);
+        buttons.add("Klawiatura", "keyboard_show", graphics.w / 2, 0, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.TOP);
         b = buttons.add("SQL GET", "sql_get", 0, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.LEFT | Types.Align.BOTTOM);
         buttons.add("GET", "get", 0, graphics.h - b.h, 0, 0, Types.Align.HADJUST | Types.Align.LEFT | Types.Align.BOTTOM);
     }
@@ -127,9 +132,22 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
             internetTask1 = internetmaster.download("http://igrek.cba.pl/findme/getsql.php");
             Output.info("Wysłano żądanie.");
         } else if (bid.equals("keyboard_show")) {
-            keyboardmanager.inputScreenShow("Podaj nazwę:","dupa");
-        } else if (bid.equals("keyboard_hide")) {
-
+            keyboardmanager.inputScreenShow("Podaj nazwę:");
+        } else if (bid.equals("files_test")) {
+            Output.info("Zapisywanie pliku...");
+            try {
+                filemanager.saveFile(filemanager.path(filemanager.internalAppDirectory(), "dupa.txt"), "gównoO");
+            } catch (IOException e) {
+                Output.error(e);
+            }
+            Output.info("Odczytywanie pliku...");
+            String result = null;
+            try {
+                result = filemanager.openFileString(filemanager.path(filemanager.internalAppDirectory(), "dupa.txt"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Output.info("plik dupa.txt:\n" + result);
         } else {
             Output.error("Nie obsłużono zdarzenia dla przycisku: " + bid);
         }
@@ -168,7 +186,7 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
 
     public void keycode_back() {
         //TODO: zamknięcie klawiatury ekranowej - zapisanie stanu
-        if(keyboardmanager.visible){
+        if (keyboardmanager.visible) {
             keyboardmanager.inputScreenHide();
         }
         control.executeEvent(Types.ControlEvent.BACK);
