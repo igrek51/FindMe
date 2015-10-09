@@ -78,4 +78,6 @@ public class Config {
         public final int min_updates_time = 5000; //[ms]
         public final int min_updates_distance = 0; //[m]
     }
+    //  KLAWIATURA EKRANOWA
+    public final int keyboard_min_height = 100; //px
 }

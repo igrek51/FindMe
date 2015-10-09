@@ -4,17 +4,18 @@ import android.app.Activity;
 
 import java.util.Random;
 
-import igrek.findme.settings.Preferences;
-import igrek.findme.modules.InternetMaster;
-import igrek.findme.modules.LocationMaster;
-import igrek.findme.system.Output;
-import igrek.findme.modules.SensorMaster;
 import igrek.findme.graphics.Buttons;
 import igrek.findme.graphics.CanvasView;
 import igrek.findme.graphics.Graphics;
+import igrek.findme.modules.InternetMaster;
+import igrek.findme.modules.KeyboardManager;
+import igrek.findme.modules.LocationMaster;
+import igrek.findme.modules.SensorMaster;
 import igrek.findme.modules.TimeMaster;
 import igrek.findme.settings.App;
 import igrek.findme.settings.Config;
+import igrek.findme.settings.Preferences;
+import igrek.findme.system.Output;
 
 public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
     public Graphics graphics;
@@ -31,6 +32,7 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
     public InternetMaster internetmaster;
     public InternetMaster.InternetTask internetTask1;
     public Preferences preferences;
+    public KeyboardManager keyboardmanager;
     boolean init = false;
     boolean running = true;
 
@@ -63,10 +65,14 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         Output.log("Inicjalizacja (po starcie grafiki).");
         touchpanel = new TouchPanel(this, graphics.w, graphics.h);
         control = new Control(this);
+        keyboardmanager = new KeyboardManager(activity, graphics);
         //przyciski
+        Buttons.Button b;
         buttons.add("Wyjdź", "exit", graphics.w, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.RIGHT | Types.Align.BOTTOM);
-        buttons.add("Czyść", "clear", graphics.w/2, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.BOTTOM);
-        Buttons.Button b = buttons.add("SQL GET", "sql_get", 0, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.LEFT | Types.Align.BOTTOM);
+        buttons.add("Czyść", "clear", graphics.w / 2, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.BOTTOM);
+        b = buttons.add("Klawiatura", "keyboard_show", graphics.w/2, 0, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.TOP);
+        buttons.add("Ukryj", "keyboard_hide", graphics.w / 2, b.h, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.TOP);
+        b = buttons.add("SQL GET", "sql_get", 0, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.LEFT | Types.Align.BOTTOM);
         buttons.add("GET", "get", 0, graphics.h - b.h, 0, 0, Types.Align.HADJUST | Types.Align.LEFT | Types.Align.BOTTOM);
     }
 
@@ -98,14 +104,15 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         if (internetTask1 != null) {
             if (internetTask1.isReady()) {
                 if (internetTask1.isCorrect()) {
-                    Output.info("Kod odpowiedzi: "+internetTask1.getResponseCode());
-                    Output.info("Odpowiedź: "+internetTask1.getResponse());
+                    Output.info("Kod odpowiedzi: " + internetTask1.getResponseCode());
+                    Output.info("Odpowiedź: " + internetTask1.getResponse());
                 } else {
                     Output.info("Błąd odbierania");
                 }
                 internetTask1 = null;
             }
         }
+        keyboardmanager.validateKeyboardVisible();
     }
 
     public void buttonsExecute(String bid) {
@@ -119,6 +126,10 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         } else if (bid.equals("sql_get")) {
             internetTask1 = internetmaster.download("http://igrek.cba.pl/findme/getsql.php");
             Output.info("Wysłano żądanie.");
+        } else if (bid.equals("keyboard_show")) {
+            keyboardmanager.inputScreenShow("Podaj nazwę:","dupa");
+        } else if (bid.equals("keyboard_hide")) {
+
         } else {
             Output.error("Nie obsłużono zdarzenia dla przycisku: " + bid);
         }
@@ -156,6 +167,10 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
     }
 
     public void keycode_back() {
+        //TODO: zamknięcie klawiatury ekranowej - zapisanie stanu
+        if(keyboardmanager.visible){
+            keyboardmanager.inputScreenHide();
+        }
         control.executeEvent(Types.ControlEvent.BACK);
     }
 

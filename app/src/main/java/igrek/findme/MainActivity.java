@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         if (Config.geti().fullscreen) {
             getWindow().setFlags(Config.geti().fullscreen_flag, Config.geti().fullscreen_flag);
         }
-        if(Config.geti().keep_screen_on) {
+        if (Config.geti().keep_screen_on) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
         engine = new Engine(this);
@@ -82,13 +82,14 @@ public class MainActivity extends AppCompatActivity {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             engine.keycode_back();
             return true;
-        }else if (keyCode == KeyEvent.KEYCODE_MENU) {
+        } else if (keyCode == KeyEvent.KEYCODE_MENU) {
             engine.keycode_menu();
             return true;
         }
         return super.onKeyDown(keyCode, event);
     }
 
+    @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_MENU) {
             return true; //przechwycenie klawisza menu
@@ -96,3 +97,5 @@ public class MainActivity extends AppCompatActivity {
         return super.onKeyDown(keyCode, event);
     }
 }
+
+

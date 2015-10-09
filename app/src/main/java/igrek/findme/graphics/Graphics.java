@@ -1,7 +1,6 @@
 package igrek.findme.graphics;
 
 import android.content.Context;
-
 import igrek.findme.logic.Engine;
 import igrek.findme.logic.Types;
 import igrek.findme.settings.App;
