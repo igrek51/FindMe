@@ -1,4 +1,4 @@
-package igrek.findme.system;
+package igrek.findme.modules;
 
 import java.util.Timer;
 import java.util.TimerTask;

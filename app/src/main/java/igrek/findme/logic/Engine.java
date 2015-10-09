@@ -5,14 +5,14 @@ import android.app.Activity;
 import java.util.Random;
 
 import igrek.findme.settings.Preferences;
-import igrek.findme.system.InternetMaster;
-import igrek.findme.system.LocationMaster;
-import igrek.findme.system.Output;
-import igrek.findme.system.SensorMaster;
+import igrek.findme.modules.InternetMaster;
+import igrek.findme.modules.LocationMaster;
+import igrek.findme.modules.Output;
+import igrek.findme.modules.SensorMaster;
 import igrek.findme.graphics.Buttons;
 import igrek.findme.graphics.CanvasView;
 import igrek.findme.graphics.Graphics;
-import igrek.findme.system.TimeMaster;
+import igrek.findme.modules.TimeMaster;
 import igrek.findme.settings.App;
 import igrek.findme.settings.Config;
 

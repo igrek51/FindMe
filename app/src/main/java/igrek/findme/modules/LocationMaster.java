@@ -1,4 +1,4 @@
-package igrek.findme.system;
+package igrek.findme.modules;
 
 import android.app.Activity;
 import android.location.GpsSatellite;
@@ -6,7 +6,6 @@ import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 
 import igrek.findme.logic.Types;
@@ -92,9 +91,6 @@ public class LocationMaster implements LocationListener, GpsStatus.Listener, Gps
         details += "Provider: " + loc.getProvider();
         details += ", accuracy: " + loc.getAccuracy();
         details += ", Time: " + loc.getTime();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            details += ", ElapsedRealtimeNanos: " + loc.getElapsedRealtimeNanos();
-        }
         details += ", Longitude: " + loc.getLongitude();
         details += ", Latitude: " + loc.getLatitude();
         details += ", Altitude: " + loc.getAltitude();

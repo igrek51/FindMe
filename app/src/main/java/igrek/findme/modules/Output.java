@@ -1,4 +1,4 @@
-package igrek.findme.system;
+package igrek.findme.modules;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;

@@ -6,7 +6,7 @@ import igrek.findme.logic.Engine;
 import igrek.findme.logic.Types;
 import igrek.findme.settings.App;
 import igrek.findme.settings.Config;
-import igrek.findme.system.Output;
+import igrek.findme.modules.Output;
 
 public class Graphics extends CanvasView {
     private App app;
