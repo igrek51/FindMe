@@ -7,7 +7,7 @@ import java.util.Random;
 import igrek.findme.settings.Preferences;
 import igrek.findme.modules.InternetMaster;
 import igrek.findme.modules.LocationMaster;
-import igrek.findme.modules.Output;
+import igrek.findme.system.Output;
 import igrek.findme.modules.SensorMaster;
 import igrek.findme.graphics.Buttons;
 import igrek.findme.graphics.CanvasView;

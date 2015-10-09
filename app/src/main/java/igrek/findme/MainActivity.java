@@ -10,7 +10,7 @@ import android.view.WindowManager;
 
 import igrek.findme.logic.Engine;
 import igrek.findme.settings.Config;
-import igrek.findme.modules.Output;
+import igrek.findme.system.Output;
 
 public class MainActivity extends AppCompatActivity {
     private Engine engine = null;

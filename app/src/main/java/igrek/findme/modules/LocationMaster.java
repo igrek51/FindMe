@@ -10,6 +10,7 @@ import android.os.Bundle;
 
 import igrek.findme.logic.Types;
 import igrek.findme.settings.Config;
+import igrek.findme.system.Output;
 
 public class LocationMaster implements LocationListener, GpsStatus.Listener, GpsStatus.NmeaListener {
     Activity activity = null;

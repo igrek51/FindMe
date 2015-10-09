@@ -2,7 +2,7 @@ package igrek.findme.logic;
 
 import igrek.findme.settings.App;
 import igrek.findme.settings.Config;
-import igrek.findme.modules.Output;
+import igrek.findme.system.Output;
 
 public class TouchPanel {
     int w, h; //rozmiary ekranu dotykowego

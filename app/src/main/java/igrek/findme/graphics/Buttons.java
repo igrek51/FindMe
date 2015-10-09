@@ -8,7 +8,7 @@ import java.util.List;
 
 import igrek.findme.logic.Types;
 import igrek.findme.settings.Config;
-import igrek.findme.modules.Output;
+import igrek.findme.system.Output;
 
 public class Buttons {
     public List<Button> buttons = new ArrayList<>();

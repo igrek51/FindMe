@@ -15,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import igrek.findme.settings.Config;
+import igrek.findme.system.Output;
 
 public class InternetMaster {
     public InternetMaster(Activity activity) {

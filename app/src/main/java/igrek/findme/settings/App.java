@@ -1,7 +1,7 @@
 package igrek.findme.settings;
 
 import igrek.findme.logic.Engine;
-import igrek.findme.modules.Output;
+import igrek.findme.system.Output;
 
 public class App {
     //singleton

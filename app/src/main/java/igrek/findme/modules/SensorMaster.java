@@ -8,6 +8,8 @@ import android.hardware.SensorManager;
 
 import java.util.List;
 
+import igrek.findme.system.Output;
+
 public class SensorMaster implements SensorEventListener {
     Activity activity = null;
     SensorManager sensorManager = null;
