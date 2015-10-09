@@ -117,7 +117,6 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
                 internetTask1 = null;
             }
         }
-        keyboardmanager.validateKeyboardVisible();
     }
 
     public void buttonsExecute(String bid) {
@@ -136,7 +135,7 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         } else if (bid.equals("files_test")) {
             Output.info("Zapisywanie pliku...");
             try {
-                filemanager.saveFile(filemanager.path(filemanager.internalAppDirectory(), "dupa.txt"), "gównoO");
+                filemanager.saveFile(filemanager.path(filemanager.internalAppDirectory(), "dupa.txt"), "gówno");
             } catch (IOException e) {
                 Output.error(e);
             }
@@ -185,9 +184,9 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
     }
 
     public void keycode_back() {
-        //TODO: zamknięcie klawiatury ekranowej - zapisanie stanu
         if (keyboardmanager.visible) {
             keyboardmanager.inputScreenHide();
+            return;
         }
         control.executeEvent(Types.ControlEvent.BACK);
     }

@@ -2,10 +2,8 @@ package igrek.findme.modules;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Rect;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,15 +11,12 @@ import android.widget.TextView;
 
 import igrek.findme.R;
 import igrek.findme.graphics.Graphics;
-import igrek.findme.settings.Config;
 import igrek.findme.system.Output;
 
 public class KeyboardManager {
     Graphics graphics;
     Activity activity;
     InputMethodManager imm;
-    public boolean keyboard_actual_shown = false;
-    public boolean keyboard_shown = false;
     public boolean visible = false;
     EditText editText;
     TextView textViewLabel;
@@ -32,7 +27,7 @@ public class KeyboardManager {
         this.graphics = graphics;
         imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         //monitorowanie stanu ekranu - czy doklejona jest klawiatura ekranowa
-        graphics.getViewTreeObserver().addOnGlobalLayoutListener(new GlobalLayoutListener());
+        //graphics.getViewTreeObserver().addOnGlobalLayoutListener(new GlobalLayoutListener());
         //inicjalizacja layoutu
         LayoutInflater inflater = activity.getLayoutInflater();
         layoutView = inflater.inflate(R.layout.keyboardinput, null);
@@ -50,6 +45,7 @@ public class KeyboardManager {
         }
     }
 
+    /*
     public class GlobalLayoutListener implements ViewTreeObserver.OnGlobalLayoutListener {
         @Override
         public void onGlobalLayout() {
@@ -59,30 +55,15 @@ public class KeyboardManager {
             keyboard_actual_shown = heightDiff >= Config.geti().keyboard_min_height;
         }
     }
-
-    public void validateKeyboardVisible() {
-        setKeyboardVisible(keyboard_shown);
-    }
-
-    public void setKeyboardVisible(boolean keyboard_shown) {
-        this.keyboard_shown = keyboard_shown;
-        //Output.log("keyboard_shown: "+ keyboard_shown);
-        //Output.log("keyboard_actual_shown: "+ keyboard_actual_shown);
-        if (keyboard_shown == keyboard_actual_shown) return;
-        if (keyboard_shown) {
-            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_NOT_ALWAYS);
-        } else {
-            imm.toggleSoftInput(0, 0);
-            //imm.hideSoftInputFromWindow(graphics.getWindowToken(), 0);
-        }
-    }
+    */
 
     public void inputScreenShow(String label, String value) {
         activity.setContentView(layoutView);
+        //imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_NOT_ALWAYS);
         textViewLabel.setText(label);
         editText.setText(value);
         editText.requestFocus();
-        setKeyboardVisible(true);
+        imm.showSoftInput(editText, 0);
         visible = true;
     }
 
@@ -91,9 +72,10 @@ public class KeyboardManager {
     }
 
     public void inputScreenHide(){
+        imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
         activity.setContentView(graphics);
-        setKeyboardVisible(false);
         visible = false;
+        Output.info("Wpisany tekst: " + getInputText());
     }
 
     public String getInputText(){
