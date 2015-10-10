@@ -1,24 +1,16 @@
 package igrek.findme.logic;
 
 import android.app.Activity;
+import android.location.Location;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import igrek.findme.graphics.Buttons;
-import igrek.findme.graphics.CanvasView;
-import igrek.findme.graphics.Graphics;
-import igrek.findme.managers.Files;
-import igrek.findme.managers.InternetManager;
+import igrek.findme.graphics.*;
+import igrek.findme.managers.*;
 import igrek.findme.managers.InternetManager.*;
-import igrek.findme.managers.InputManager;
-import igrek.findme.managers.GPSManager;
-import igrek.findme.managers.Sensors;
-import igrek.findme.managers.TimerManager;
-import igrek.findme.settings.App;
-import igrek.findme.settings.Config;
-import igrek.findme.settings.Preferences;
+import igrek.findme.settings.*;
 import igrek.findme.system.Output;
 
 public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel {
@@ -36,9 +28,8 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
     public Sensors sensors;
     public GPSManager gps;
     public InternetManager internetmanager;
-    public InternetManager.InternetTask internetTask1;
     public Preferences preferences;
-    public InputManager inputmanager;
+    public InputManager inputmanager = null;
     public Files files;
 
 
@@ -63,7 +54,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
     public void timer_run() {
         if (!running) return;
         update();
-        if (!inputmanager.visible) {
+        if (inputmanager!=null && !inputmanager.visible) {
             graphics.invalidate();
         }
     }
@@ -110,19 +101,12 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         if (buttons.isClicked()) {
             buttonsExecute(buttons.clickedId());
         }
-        /*
-        if (internetTask1 != null) {
-            if (internetTask1.isReady()) {
-                if (internetTask1.isCorrect()) {
-                    Output.info("Kod odpowiedzi: " + internetTask1.getResponseCode());
-                    Output.info("Odpowiedź: " + internetTask1.getResponse());
-                } else {
-                    Output.info("Błąd odbierania");
-                }
-                internetTask1 = null;
+        if (app.id_user > 0 && gps.isGPSAvailable()) { //zalogowany i ma sygnał gps
+            if (System.currentTimeMillis() > app.last_position_update + config.location.position_update_period) {
+                app.last_position_update = System.currentTimeMillis();
+                sendGPSPosition();
             }
         }
-        */
     }
 
     public void buttonsExecute(String bid) {
@@ -131,7 +115,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         } else if (bid.equals("clear")) {
             Output.echos = "";
         } else if (bid.equals("get")) {
-            internetmanager.download("http://igrek.cba.pl/findme/get.php?name=dupa", new InternetManager.ResponseHandler() {
+            internetmanager.GET("http://igrek.cba.pl/findme/get.php?name=dupa", new InternetManager.ResponseHandler() {
                 @Override
                 public void onResponse(InternetManager.InternetTask internetTask) {
                     if (internetTask.isCorrect()) {
@@ -142,9 +126,6 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
                     }
                 }
             });
-            Output.info("Wysłano żądanie.");
-        } else if (bid.equals("sql_get")) {
-            internetTask1 = internetmanager.download("http://igrek.cba.pl/findme/getsql.php");
             Output.info("Wysłano żądanie.");
         } else if (bid.equals("keyboard_show")) {
             inputmanager.inputScreenShow("Podaj nazwę:", new InputManager.InputHandler() {
@@ -157,12 +138,12 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
             inputmanager.inputScreenShow("Login:", new InputManager.InputHandler() {
                 @Override
                 public void onInput(String inputText) {
-                    App.geti().login = inputText;
+                    app.login = inputText;
                     Output.info("Wpisany login: " + inputText);
                     inputmanager.inputScreenShow("Hasło:", new InputManager.InputHandler() {
                         @Override
                         public void onInput(String inputText) {
-                            App.geti().pass = inputText;
+                            app.pass = inputText;
                             Output.info("Wpisane hasło: " + inputText);
                             login();
                         }
@@ -223,20 +204,49 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
 
 
     public void login() {
-        List<InternetManager.Variable> data = new ArrayList<>();
-        data.add(new Variable("login", App.geti().login));
-        data.add(new Variable("pass", App.geti().pass));
-        internetmanager.downloadPOST("http://igrek.cba.pl/findme/login.php", data, new ResponseHandler() {
+        List<Variable> data = new ArrayList<>();
+        data.add(new Variable("login", app.login));
+        data.add(new Variable("pass", app.pass));
+        Output.info("Próba logowania...");
+        internetmanager.POST("http://igrek.cba.pl/findme/login.php", data, new ResponseHandler() {
             @Override
-            public void onResponse(InternetTask internetTask) {
-                if (internetTask.isCorrect()) {
-                    Output.info("Kod odpowiedzi: " + internetTask.getResponseCode());
-                    Output.info("Odpowiedź: " + internetTask.getResponse());
-                } else {
-                    Output.info("Błąd odbierania");
-                }
+            public void onSuccess(InternetTask internetTask) {
+                app.id_user = internetTask.getResponse2Int();
+                Output.info("Zalogowano, ID: " + app.id_user);
             }
         });
-        Output.info("Próba logowania...");
+    }
+
+    public void sendGPSPosition() {
+        Output.info("Wysyłanie położenia...");
+        Location location = gps.getGPSLocation();
+        if (location == null) {
+            Output.error("Błąd location");
+        } else {
+            List<Variable> data = new ArrayList<>();
+            data.add(new Variable("id_user", app.id_user));
+            data.add(new Variable("longitude", location.getLongitude()));
+            data.add(new Variable("latitude", location.getLatitude()));
+            if (location.hasAltitude()) {
+                data.add(new Variable("altitude", location.getAltitude()));
+            }
+            if (location.hasAccuracy()) {
+                data.add(new Variable("accuracy", location.getAccuracy()));
+            }
+            if (location.hasBearing()) {
+                data.add(new Variable("direction", location.getBearing()));
+            }
+            if (location.hasSpeed()) {
+                data.add(new Variable("speed", location.getSpeed()));
+            }
+            internetmanager.POST("http://igrek.cba.pl/findme/send_location.php", data, new ResponseHandler() {
+                @Override
+                public void onSuccess(InternetTask internetTask) {
+                    if (internetTask.isCorrect()) {
+                        Output.info("Wysłanie położenia powiodło się.");
+                    }
+                }
+            });
+        }
     }
 }

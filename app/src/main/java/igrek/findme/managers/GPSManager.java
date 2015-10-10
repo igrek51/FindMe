@@ -1,6 +1,7 @@
 package igrek.findme.managers;
 
 import android.app.Activity;
+import android.content.Context;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -8,17 +9,17 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
-import igrek.findme.logic.Types;
 import igrek.findme.settings.Config;
 import igrek.findme.system.Output;
 
 public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStatus.NmeaListener {
     Activity activity = null;
     LocationManager locationManager = null;
+    boolean available = false; //TODO: kiedy zmieniać avaible? rozłączanie i łapanie sygnału
 
     public GPSManager(Activity activity) {
         this.activity = activity;
-        locationManager = (LocationManager) activity.getSystemService(activity.LOCATION_SERVICE);
+        locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
         if (locationManager == null) {
             Output.errorCritical("Błąd usługi lokalizacji");
             return;
@@ -36,8 +37,6 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
             if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                 locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, Config.geti().location.min_updates_time, Config.geti().location.min_updates_distance, this);
             }
-        } catch (SecurityException | IllegalArgumentException ex) {
-            Output.error(ex);
         } catch (RuntimeException ex) {
             Output.error(ex);
         }
@@ -60,9 +59,12 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
     @Override
     public void onGpsStatusChanged(int event) {
         Output.info("GpsStatusChanged: " + gpsStatusToString(event));
+        if(event==GpsStatus.GPS_EVENT_FIRST_FIX){
+            available = true;
+        }
         if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS || event == GpsStatus.GPS_EVENT_FIRST_FIX) {
             GpsStatus status = locationManager.getGpsStatus(null);
-            if(status.getTimeToFirstFix()!=0){
+            if (status.getTimeToFirstFix() != 0) {
                 Output.info("Time to first fix: " + status.getTimeToFirstFix());
             }
             Iterable<GpsSatellite> sats = status.getSatellites();
@@ -75,7 +77,7 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
                 details += ", Almanac: " + sat.hasAlmanac() + ", Ephemeris: " + sat.hasEphemeris();
                 Output.log(details);
             }
-            Output.info("Liczba satelit: "+satellites);
+            Output.info("Liczba satelit: " + satellites);
         }
     }
 
@@ -87,7 +89,7 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
 
     @Override
     public void onLocationChanged(Location loc) {
-        Output.info("LocChanged: "+loc.getLongitude()+", "+loc.getLatitude()+" ("+loc.getExtras().getInt("satellites")+", "+loc.getProvider()+")");
+        Output.info("LocChanged: " + loc.getLongitude() + ", " + loc.getLatitude() + " (" + loc.getExtras().getInt("satellites") + ", " + loc.getProvider() + ")");
         String details = "";
         details += "Provider: " + loc.getProvider();
         details += ", accuracy: " + loc.getAccuracy();
@@ -111,46 +113,18 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-        Output.info("StatusChanged: " + provider + ", status: " + status + " ("+gpsStatusToString(status)+" ?)");
+        Output.info("StatusChanged: " + provider + ", status: " + status + " (" + gpsStatusToString(status) + " ?)");
         for (String key : extras.keySet()) {
             Object value = extras.get(key);
             Output.info("extras key: " + key + " = " + value.toString() + ", type: " + value.getClass().getName());
         }
     }
 
-    public double getCoordinate(String provider, Types.Coordinate coordinate) {
-        if (locationManager == null) {
-            Output.error("location Manager = null");
-            return 0;
-        }
-        Location location = null;
-        try {
-            location = locationManager.getLastKnownLocation(provider);
-        } catch (SecurityException | IllegalArgumentException ex) {
-            Output.error(ex);
-        }
-        if (location == null) {
-            Output.error("last location (" + provider + ") = null");
-            return 0;
-        }
-        if (coordinate == Types.Coordinate.ALTITUDE) {
-            if (!location.hasAltitude()) {
-                Output.error("location: no altitude");
-                return 0;
-            }
-            return location.getAltitude();
-        } else if (coordinate == Types.Coordinate.LATITUDE) {
-            return location.getLatitude();
-        } else if (coordinate == Types.Coordinate.LONGITUDE) {
-            return location.getLongitude();
-        } else if (coordinate == Types.Coordinate.ACCURACY) {
-            if (!location.hasAccuracy()) {
-                Output.error("location: no accuracy");
-                return 0;
-            }
-            return (double) location.getAccuracy();
-        }
-        return 0;
+    public Location getGPSLocation() {
+        return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
     }
 
+    public boolean isGPSAvailable() {
+        return available;
+    }
 }

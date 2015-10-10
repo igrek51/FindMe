@@ -46,8 +46,23 @@ public class InternetManager {
         Output.info("Moduł połączenia internetowego uruchomiony.");
     }
 
-    public interface ResponseHandler {
-        void onResponse(InternetTask internetTask);
+    public abstract static class ResponseHandler {
+        public void onResponse(InternetTask internetTask){
+            //domyślna obsługa odpowiedzi
+            if (internetTask.isCorrect()) {
+                if (internetTask.getResponse1Int() == Config.geti().connection.success_code) {
+                    onSuccess(internetTask);
+                } else {
+                    Output.error(internetTask.getResponse2String());
+                }
+            } else {
+                Output.info("Błąd odbierania pakietu odpowiedzi");
+            }
+        }
+
+        public void onSuccess(InternetTask internetTask){
+            //...
+        }
     }
 
     public class InternetTask {
@@ -55,7 +70,6 @@ public class InternetManager {
         String response = "";
         int response_code = 0;
         String method;
-        public boolean ready = false; //zakończenie powodzeniem lub niepowodzeniem
         public boolean error = false; //wystąpił błąd
         List<Variable> data = null; //dane POST
         public ResponseHandler responseHandler = null;
@@ -65,27 +79,15 @@ public class InternetManager {
             this.method = method;
         }
 
-        public boolean isReady() {
-            return ready;
-        }
-
         public boolean isCorrect() {
-            return ready && !error;
+            return !error;
         }
 
         public int getResponseCode() {
-            if (!ready) {
-                Output.error("getResponseCode: Zadanie nie zostało ukończone");
-                return 0;
-            }
             return response_code;
         }
 
         public String getResponse() {
-            if (!ready) {
-                Output.error("getResponse: Zadanie nie zostało ukończone");
-                return "";
-            }
             if (error) {
                 Output.error("getResponse: Błąd podczas pobierania odpowiedzi");
                 return "";
@@ -109,7 +111,7 @@ public class InternetManager {
             try {
                 return Integer.parseInt(resp);
             } catch (NumberFormatException e) {
-                Output.error("getResponse1Int: Nieprawidłowy format liczby");
+                Output.error("getResponse1Int: Nieprawidłowy format liczby: "+resp);
                 return 0;
             }
         }
@@ -161,6 +163,17 @@ public class InternetManager {
             this.name = name;
             this.value = value;
         }
+
+        public Variable(String name, double value) {
+            this.name = name;
+            this.value = String.valueOf(value);
+        }
+
+        public Variable(String name, int value) {
+            this.name = name;
+            this.value = String.valueOf(value);
+        }
+
 
         public String toURLString() {
             try {
@@ -224,7 +237,6 @@ public class InternetManager {
                     Output.error("Błąd zamykania strumienia danych");
                 }
             }
-            internetTask.ready = true; //zakończono
             if (internetTask.responseHandler != null) { //wywołanie zdarzenia
                 internetTask.responseHandler.onResponse(internetTask);
             }
@@ -238,24 +250,16 @@ public class InternetManager {
         return (new String(buffer)).substring(0, characters);
     }
 
-    public InternetTask download(String url) {
-        InternetTask internetTask = new InternetTask(url, "GET");
-        new DownloadTask().execute(internetTask);
-        return internetTask;
-    }
-
-    public InternetTask download(String url, ResponseHandler responseHandler) {
+    public void GET(String url, ResponseHandler responseHandler) {
         InternetTask internetTask = new InternetTask(url, "GET");
         internetTask.responseHandler = responseHandler;
         new DownloadTask().execute(internetTask);
-        return internetTask;
     }
 
-    public InternetTask downloadPOST(String url, List<Variable> data, ResponseHandler responseHandler) {
+    public void POST(String url, List<Variable> data, ResponseHandler responseHandler) {
         InternetTask internetTask = new InternetTask(url, "POST");
         internetTask.data = data;
         internetTask.responseHandler = responseHandler;
         new DownloadTask().execute(internetTask);
-        return internetTask;
     }
 }

@@ -71,12 +71,14 @@ public class Config {
         public final int max_response_size = 1024;
         public final int read_timeout = 10000; //[ms]
         public final int connect_timeout = 15000; //[ms]
+        public final int success_code = 200;
     }
     //  LOKALIZACJA
     public Location location = new Location();
     public class Location {
         public final int min_updates_time = 5000; //[ms]
         public final int min_updates_distance = 0; //[m]
+        public final int position_update_period = 5000;
     }
     //  KLAWIATURA EKRANOWA
     public final int keyboard_min_height = 100; //px
