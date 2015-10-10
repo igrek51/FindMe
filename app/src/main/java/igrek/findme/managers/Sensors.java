@@ -1,4 +1,4 @@
-package igrek.findme.modules;
+package igrek.findme.managers;
 
 import android.app.Activity;
 import android.hardware.Sensor;
@@ -10,7 +10,7 @@ import java.util.List;
 
 import igrek.findme.system.Output;
 
-public class SensorMaster implements SensorEventListener {
+public class Sensors implements SensorEventListener {
     Activity activity = null;
     SensorManager sensorManager = null;
     Sensor sensor = null;
@@ -18,7 +18,7 @@ public class SensorMaster implements SensorEventListener {
     List<Sensor> msensorList;
     public final int sensor_type = Sensor.TYPE_ACCELEROMETER;
 
-    public SensorMaster(Activity activity) {
+    public Sensors(Activity activity) {
         this.activity = activity;
         sensorManager = (SensorManager) activity.getSystemService(this.activity.SENSOR_SERVICE);
         if (sensorManager == null) {

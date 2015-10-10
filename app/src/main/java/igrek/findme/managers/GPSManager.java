@@ -1,4 +1,4 @@
-package igrek.findme.modules;
+package igrek.findme.managers;
 
 import android.app.Activity;
 import android.location.GpsSatellite;
@@ -12,11 +12,11 @@ import igrek.findme.logic.Types;
 import igrek.findme.settings.Config;
 import igrek.findme.system.Output;
 
-public class LocationMaster implements LocationListener, GpsStatus.Listener, GpsStatus.NmeaListener {
+public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStatus.NmeaListener {
     Activity activity = null;
     LocationManager locationManager = null;
 
-    public LocationMaster(Activity activity) {
+    public GPSManager(Activity activity) {
         this.activity = activity;
         locationManager = (LocationManager) activity.getSystemService(activity.LOCATION_SERVICE);
         if (locationManager == null) {

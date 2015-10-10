@@ -1,4 +1,4 @@
-package igrek.findme.modules;
+package igrek.findme.managers;
 
 import android.app.Activity;
 import android.content.Context;
@@ -13,12 +13,14 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import igrek.findme.settings.Config;
 import igrek.findme.system.Output;
 
-public class InternetMaster {
-    public InternetMaster(Activity activity) {
+public class InternetManager {
+    public InternetManager(Activity activity) {
         ConnectivityManager connMgr = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connMgr == null) {
             Output.errorCritical("Błąd usługi połączenia");
@@ -40,6 +42,10 @@ public class InternetMaster {
         Output.info("Moduł połączenia internetowego uruchomiony.");
     }
 
+    public interface ResponseHandler {
+        void onResponse(InternetTask internetTask);
+    }
+
     public class InternetTask {
         String url;
         String response = "";
@@ -47,6 +53,7 @@ public class InternetMaster {
         String method;
         public boolean ready = false; //zakończenie powodzeniem lub niepowodzeniem
         public boolean error = false; //wystąpił błąd
+        public ResponseHandler responseHandler = null;
 
         public InternetTask(String url, String method) {
             this.url = url;
@@ -61,6 +68,14 @@ public class InternetMaster {
             return ready && !error;
         }
 
+        public int getResponseCode() {
+            if (!ready) {
+                Output.error("getResponseCode: Zadanie nie zostało ukończone");
+                return 0;
+            }
+            return response_code;
+        }
+
         public String getResponse() {
             if (!ready) {
                 Output.error("getResponse: Zadanie nie zostało ukończone");
@@ -73,17 +88,57 @@ public class InternetMaster {
             return response;
         }
 
-        public int getResponseCode() {
-            if (!ready) {
-                Output.error("getResponse: Zadanie nie zostało ukończone");
-                return 0;
-            }
-            if (error) {
-                Output.error("getResponse: Błąd podczas pobierania odpowiedzi");
-                return 0;
-            }
-            return response_code;
+        public List<String> getResponseStrings(){
+            String resp = getResponse();
+            //podział znakami \n
+            return split(resp, '\n');
         }
+
+        public int getResponse1Int() {
+            String resp = getResponse();
+            //obcięcie numeru odpowiedzi i pozostałych danych
+            int first_space = resp.indexOf("\n");
+            if(first_space != -1){
+                resp = resp.substring(0, first_space);
+            }
+            try {
+                return Integer.parseInt(resp);
+            }catch(NumberFormatException e){
+                Output.error("getResponse1Int: Nieprawidłowy format liczby");
+                return 0;
+            }
+        }
+
+        public String getResponse2String() {
+            List<String> lista = getResponseStrings();
+            if(lista.size() < 2){
+                Output.error("getResponse2String: Brak drugiego Stringa w odpowiedzi");
+                return "";
+            }else{
+                return lista.get(1);
+            }
+        }
+
+        public int getResponse2Int() {
+            try {
+                return Integer.parseInt(getResponse2String());
+            }catch(NumberFormatException e){
+                Output.error("getResponse2Int: Nieprawidłowy format liczby");
+                return 0;
+            }
+        }
+    }
+
+    public static List<String> split(String strToSplit, char delimiter) {
+        List<String> arr = new ArrayList<>();
+        int foundPosition;
+        int startIndex = 0;
+        while ((foundPosition = strToSplit.indexOf(delimiter, startIndex)) > -1) {
+            arr.add(strToSplit.substring(startIndex, foundPosition));
+            startIndex = foundPosition + 1;
+        }
+        arr.add(strToSplit.substring(startIndex));
+        return arr;
     }
 
     private class DownloadTask extends AsyncTask<InternetTask, Void, Void> {
@@ -120,6 +175,9 @@ public class InternetMaster {
                 }
             }
             internetTask.ready = true; //zakończono
+            if(internetTask.responseHandler != null){ //wywołanie zdarzenia
+                internetTask.responseHandler.onResponse(internetTask);
+            }
         }
     }
 
@@ -132,6 +190,13 @@ public class InternetMaster {
 
     public InternetTask download(String url) {
         InternetTask internetTask = new InternetTask(url, "GET");
+        new DownloadTask().execute(internetTask);
+        return internetTask;
+    }
+
+    public InternetTask download(String url, ResponseHandler responseHandler) {
+        InternetTask internetTask = new InternetTask(url, "GET");
+        internetTask.responseHandler = responseHandler;
         new DownloadTask().execute(internetTask);
         return internetTask;
     }

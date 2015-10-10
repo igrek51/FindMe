@@ -3,42 +3,42 @@ package igrek.findme.logic;
 import android.app.Activity;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Random;
 
 import igrek.findme.graphics.Buttons;
 import igrek.findme.graphics.CanvasView;
 import igrek.findme.graphics.Graphics;
-import igrek.findme.modules.FileManager;
-import igrek.findme.modules.InternetMaster;
-import igrek.findme.modules.KeyboardManager;
-import igrek.findme.modules.LocationMaster;
-import igrek.findme.modules.SensorMaster;
-import igrek.findme.modules.TimeMaster;
+import igrek.findme.managers.Files;
+import igrek.findme.managers.InternetManager;
+import igrek.findme.managers.InputManager;
+import igrek.findme.managers.GPSManager;
+import igrek.findme.managers.Sensors;
+import igrek.findme.managers.TimerManager;
 import igrek.findme.settings.App;
 import igrek.findme.settings.Config;
 import igrek.findme.settings.Preferences;
 import igrek.findme.system.Output;
 
-public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
-    public Graphics graphics;
-    public Activity activity;
-    TimeMaster timer = null;
-    App app;
-    Config config;
-    public Buttons buttons;
-    Random random;
-    TouchPanel touchpanel = null;
-    Control control = null;
-    public SensorMaster sensormaster;
-    public LocationMaster locationmaster;
-    public InternetMaster internetmaster;
-    public InternetMaster.InternetTask internetTask1;
-    public Preferences preferences;
-    public KeyboardManager keyboardmanager;
-    public FileManager filemanager;
+public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel {
     boolean init = false;
     boolean running = true;
+    public Activity activity;
+    App app;
+    Config config;
+    TimerManager timer;
+    Random random;
+    public Graphics graphics;
+    public Buttons buttons;
+    TouchPanel touchpanel = null;
+    Control control = null;
+    public Sensors sensors;
+    public GPSManager gps;
+    public InternetManager internetmanager;
+    public InternetManager.InternetTask internetTask1;
+    public Preferences preferences;
+    public InputManager inputmanager;
+    public Files files;
+
 
     public Engine(Activity activity) {
         this.activity = activity;
@@ -48,12 +48,12 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         preferences = new Preferences(activity);
         graphics = new Graphics(activity, this);
         buttons = new Buttons();
-        timer = new TimeMaster(this, Config.geti().timer_interval0);
+        timer = new TimerManager(this, Config.geti().timer_interval0);
         random = new Random();
-        sensormaster = new SensorMaster(activity);
-        locationmaster = new LocationMaster(activity);
-        internetmaster = new InternetMaster(activity);
-        filemanager = new FileManager(activity);
+        sensors = new Sensors(activity);
+        gps = new GPSManager(activity);
+        internetmanager = new InternetManager(activity);
+        files = new Files(activity);
         Output.log("Utworzenie aplikacji.");
     }
 
@@ -61,7 +61,9 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
     public void timer_run() {
         if (!running) return;
         update();
-        graphics.invalidate();
+        if (!inputmanager.visible) {
+            graphics.invalidate();
+        }
     }
 
     public void init() {
@@ -70,23 +72,23 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         Output.log("Inicjalizacja (po starcie grafiki).");
         touchpanel = new TouchPanel(this, graphics.w, graphics.h);
         control = new Control(this);
-        keyboardmanager = new KeyboardManager(activity, graphics);
+        inputmanager = new InputManager(activity, graphics);
         //przyciski
         Buttons.Button b;
         buttons.add("Wyjdź", "exit", graphics.w, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.RIGHT | Types.Align.BOTTOM);
         b = buttons.add("Czyść", "clear", graphics.w / 2, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.BOTTOM);
-        buttons.add("Test plików", "files_test", graphics.w / 2, b.y - b.h, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.TOP);
+        buttons.add("Zaloguj", "login", graphics.w / 2, b.y - b.h, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.TOP);
         buttons.add("Klawiatura", "keyboard_show", graphics.w / 2, 0, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.TOP);
         b = buttons.add("SQL GET", "sql_get", 0, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.LEFT | Types.Align.BOTTOM);
         buttons.add("GET", "get", 0, graphics.h - b.h, 0, 0, Types.Align.HADJUST | Types.Align.LEFT | Types.Align.BOTTOM);
     }
 
     public void pause() {
-        sensormaster.unregister();
+        sensors.unregister();
     }
 
     public void resume() {
-        sensormaster.register();
+        sensors.register();
     }
 
     public void quit() {
@@ -106,6 +108,7 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         if (buttons.isClicked()) {
             buttonsExecute(buttons.clickedId());
         }
+        /*
         if (internetTask1 != null) {
             if (internetTask1.isReady()) {
                 if (internetTask1.isCorrect()) {
@@ -117,6 +120,7 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
                 internetTask1 = null;
             }
         }
+        */
     }
 
     public void buttonsExecute(String bid) {
@@ -125,26 +129,41 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
         } else if (bid.equals("clear")) {
             Output.echos = "";
         } else if (bid.equals("get")) {
-            internetTask1 = internetmaster.download("http://igrek.cba.pl/findme/get.php?name=dupa");
+            internetmanager.download("http://igrek.cba.pl/findme/get.php?name=dupa", new InternetManager.ResponseHandler() {
+                @Override
+                public void onResponse(InternetManager.InternetTask internetTask) {
+                    if (internetTask.isCorrect()) {
+                        Output.info("Kod odpowiedzi: " + internetTask.getResponseCode());
+                        Output.info("Odpowiedź: " + internetTask.getResponse());
+                    } else {
+                        Output.info("Błąd odbierania");
+                    }
+                }
+            });
             Output.info("Wysłano żądanie.");
         } else if (bid.equals("sql_get")) {
-            internetTask1 = internetmaster.download("http://igrek.cba.pl/findme/getsql.php");
+            internetTask1 = internetmanager.download("http://igrek.cba.pl/findme/getsql.php");
             Output.info("Wysłano żądanie.");
         } else if (bid.equals("keyboard_show")) {
-            keyboardmanager.inputScreenShow("Podaj nazwę:");
+            inputmanager.inputScreenShow("Podaj nazwę:", new InputManager.InputHandler() {
+                @Override
+                public void onInput(String inputText) {
+                    Output.info("Wpisany tekst: " + inputText);
+                }
+            });
         } else if (bid.equals("files_test")) {
             Output.info("Zapisywanie pliku...");
             try {
-                filemanager.saveFile(filemanager.path(filemanager.internalAppDirectory(), "dupa.txt"), "gówno");
+                files.saveFile(files.path(files.internalAppDirectory(), "dupa.txt"), "gówno");
             } catch (IOException e) {
                 Output.error(e);
             }
             Output.info("Odczytywanie pliku...");
             String result = null;
             try {
-                result = filemanager.openFileString(filemanager.path(filemanager.internalAppDirectory(), "dupa.txt"));
+                result = files.openFileString(files.path(files.internalAppDirectory(), "dupa.txt"));
             } catch (IOException e) {
-                e.printStackTrace();
+                Output.error(e);
             }
             Output.info("plik dupa.txt:\n" + result);
         } else {
@@ -184,8 +203,8 @@ public class Engine implements TimeMaster.MasterOfTime, CanvasView.TouchPanel {
     }
 
     public void keycode_back() {
-        if (keyboardmanager.visible) {
-            keyboardmanager.inputScreenHide();
+        if (inputmanager.visible) {
+            inputmanager.inputScreenHide();
             return;
         }
         control.executeEvent(Types.ControlEvent.BACK);

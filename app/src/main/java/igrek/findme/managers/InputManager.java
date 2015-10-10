@@ -1,4 +1,4 @@
-package igrek.findme.modules;
+package igrek.findme.managers;
 
 import android.app.Activity;
 import android.content.Context;
@@ -11,9 +11,8 @@ import android.widget.TextView;
 
 import igrek.findme.R;
 import igrek.findme.graphics.Graphics;
-import igrek.findme.system.Output;
 
-public class KeyboardManager {
+public class InputManager {
     Graphics graphics;
     Activity activity;
     InputMethodManager imm;
@@ -21,8 +20,9 @@ public class KeyboardManager {
     EditText editText;
     TextView textViewLabel;
     View layoutView;
+    InputHandler inputHandler = null;
 
-    public KeyboardManager(Activity activity, Graphics graphics) {
+    public InputManager(Activity activity, Graphics graphics) {
         this.activity = activity;
         this.graphics = graphics;
         imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -36,6 +36,10 @@ public class KeyboardManager {
         button_ok.setOnClickListener(new ButtonOK());
         editText = (EditText) layoutView.findViewById(R.id.inputKeyboardText);
         textViewLabel = (TextView) layoutView.findViewById(R.id.label_text);
+    }
+
+    public interface InputHandler {
+        void onInput(String inputText);
     }
 
     public class ButtonOK implements View.OnClickListener {
@@ -57,7 +61,8 @@ public class KeyboardManager {
     }
     */
 
-    public void inputScreenShow(String label, String value) {
+    public void inputScreenShow(String label, String value, InputHandler inputHandler) {
+        this.inputHandler = inputHandler;
         activity.setContentView(layoutView);
         //imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_NOT_ALWAYS);
         textViewLabel.setText(label);
@@ -67,15 +72,18 @@ public class KeyboardManager {
         visible = true;
     }
 
-    public void inputScreenShow(String label){
-        inputScreenShow(label, "");
+    public void inputScreenShow(String label, InputHandler inputHandler){
+        inputScreenShow(label, "", inputHandler); //domyślna wartość pusta
     }
 
     public void inputScreenHide(){
         imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
         activity.setContentView(graphics);
         visible = false;
-        Output.info("Wpisany tekst: " + getInputText());
+        if(inputHandler!=null){
+            inputHandler.onInput(editText.getText().toString()); //wywołanie zdarzenia
+            inputHandler = null;
+        }
     }
 
     public String getInputText(){

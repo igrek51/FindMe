@@ -1,4 +1,4 @@
-package igrek.findme.modules;
+package igrek.findme.managers;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -6,7 +6,7 @@ import java.util.TimerTask;
 import igrek.findme.logic.Engine;
 import igrek.findme.settings.Config;
 
-public class TimeMaster {
+public class TimerManager {
     //metoda run do zaimplementowania
     public interface MasterOfTime {
         void timer_run();
@@ -17,14 +17,14 @@ public class TimeMaster {
     private TimerTask timerTask = null;
     private int interval; //ms
 
-    public TimeMaster(MasterOfTime master_of_time, int interval) {
+    public TimerManager(MasterOfTime master_of_time, int interval) {
         this.master_of_time = master_of_time;
         if (interval == 0) interval = 1000 / Config.geti().timer_fps0; //odczytanie z fpsów
         this.interval = interval;
         start();
     }
 
-    public TimeMaster(MasterOfTime master_of_time) {
+    public TimerManager(MasterOfTime master_of_time) {
         this(master_of_time, Config.geti().timer_interval0);
     }
 

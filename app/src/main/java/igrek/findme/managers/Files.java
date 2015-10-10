@@ -1,4 +1,4 @@
-package igrek.findme.modules;
+package igrek.findme.managers;
 
 import android.app.Activity;
 import android.os.Environment;
@@ -14,10 +14,10 @@ import java.util.List;
 
 import igrek.findme.system.Output;
 
-public class FileManager {
+public class Files {
     Activity activity;
 
-    public FileManager(Activity activity) {
+    public Files(Activity activity) {
         this.activity = activity;
     }
 
