@@ -6,13 +6,17 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +57,7 @@ public class InternetManager {
         String method;
         public boolean ready = false; //zakończenie powodzeniem lub niepowodzeniem
         public boolean error = false; //wystąpił błąd
+        List<Variable> data = null; //dane POST
         public ResponseHandler responseHandler = null;
 
         public InternetTask(String url, String method) {
@@ -88,7 +93,7 @@ public class InternetManager {
             return response;
         }
 
-        public List<String> getResponseStrings(){
+        public List<String> getResponseStrings() {
             String resp = getResponse();
             //podział znakami \n
             return split(resp, '\n');
@@ -98,12 +103,12 @@ public class InternetManager {
             String resp = getResponse();
             //obcięcie numeru odpowiedzi i pozostałych danych
             int first_space = resp.indexOf("\n");
-            if(first_space != -1){
+            if (first_space != -1) {
                 resp = resp.substring(0, first_space);
             }
             try {
                 return Integer.parseInt(resp);
-            }catch(NumberFormatException e){
+            } catch (NumberFormatException e) {
                 Output.error("getResponse1Int: Nieprawidłowy format liczby");
                 return 0;
             }
@@ -111,10 +116,10 @@ public class InternetManager {
 
         public String getResponse2String() {
             List<String> lista = getResponseStrings();
-            if(lista.size() < 2){
+            if (lista.size() < 2) {
                 Output.error("getResponse2String: Brak drugiego Stringa w odpowiedzi");
                 return "";
-            }else{
+            } else {
                 return lista.get(1);
             }
         }
@@ -122,7 +127,7 @@ public class InternetManager {
         public int getResponse2Int() {
             try {
                 return Integer.parseInt(getResponse2String());
-            }catch(NumberFormatException e){
+            } catch (NumberFormatException e) {
                 Output.error("getResponse2Int: Nieprawidłowy format liczby");
                 return 0;
             }
@@ -144,20 +149,65 @@ public class InternetManager {
     private class DownloadTask extends AsyncTask<InternetTask, Void, Void> {
         @Override
         protected Void doInBackground(InternetTask... its) {
-            downloadUrl(its[0]);
+            executeTask(its[0]);
             return null;
         }
     }
 
-    private void downloadUrl(InternetTask internetTask) {
+    public static class Variable {
+        public String name;
+        public String value;
+        public Variable(String name, String value){
+            this.name = name;
+            this.value = value;
+        }
+
+        public String toURLString() {
+            try {
+                return URLEncoder.encode(name, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                Output.error(e);
+                return "";
+            }
+        }
+    }
+
+    private String getDataQuery(List<Variable> data) {
+        if(data==null) return "";
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+        for (Variable var : data) {
+            if (first) first = false;
+            else result.append("&");
+            result.append(var.toURLString());
+        }
+        return result.toString();
+    }
+
+    private void methodPOST(HttpURLConnection conn, List<Variable> data) throws IOException {
+        conn.setRequestMethod("POST");
+        OutputStream os = conn.getOutputStream();
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+        writer.write(getDataQuery(data));
+        writer.flush();
+        writer.close();
+        os.close();
+    }
+
+    private void executeTask(InternetTask internetTask) {
         InputStream is = null;
         try {
             URL url = new URL(internetTask.url);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setReadTimeout(Config.geti().connection.read_timeout);
             conn.setConnectTimeout(Config.geti().connection.connect_timeout);
-            conn.setRequestMethod(internetTask.method);
             conn.setDoInput(true);
+            conn.setDoOutput(true);
+            if (internetTask.method.equals("POST")) {
+                methodPOST(conn, internetTask.data);
+            } else {
+                conn.setRequestMethod("GET");
+            }
             conn.connect();
             internetTask.response_code = conn.getResponseCode();
             is = conn.getInputStream();
@@ -175,7 +225,7 @@ public class InternetManager {
                 }
             }
             internetTask.ready = true; //zakończono
-            if(internetTask.responseHandler != null){ //wywołanie zdarzenia
+            if (internetTask.responseHandler != null) { //wywołanie zdarzenia
                 internetTask.responseHandler.onResponse(internetTask);
             }
         }
@@ -196,6 +246,14 @@ public class InternetManager {
 
     public InternetTask download(String url, ResponseHandler responseHandler) {
         InternetTask internetTask = new InternetTask(url, "GET");
+        internetTask.responseHandler = responseHandler;
+        new DownloadTask().execute(internetTask);
+        return internetTask;
+    }
+
+    public InternetTask downloadPOST(String url, List<Variable> data, ResponseHandler responseHandler) {
+        InternetTask internetTask = new InternetTask(url, "POST");
+        internetTask.data = data;
         internetTask.responseHandler = responseHandler;
         new DownloadTask().execute(internetTask);
         return internetTask;

@@ -31,7 +31,9 @@ public class App {
     //rozmiar ekranu
     public int w = 0;
     public int h = 0;
-
+    //  LOGOWANIE
     public int login_workflow = 0;
     public int id_login = 0;
+    public String login;
+    public String pass;
 }

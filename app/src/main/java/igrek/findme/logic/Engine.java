@@ -2,7 +2,8 @@ package igrek.findme.logic;
 
 import android.app.Activity;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import igrek.findme.graphics.Buttons;
@@ -10,6 +11,7 @@ import igrek.findme.graphics.CanvasView;
 import igrek.findme.graphics.Graphics;
 import igrek.findme.managers.Files;
 import igrek.findme.managers.InternetManager;
+import igrek.findme.managers.InternetManager.*;
 import igrek.findme.managers.InputManager;
 import igrek.findme.managers.GPSManager;
 import igrek.findme.managers.Sensors;
@@ -151,21 +153,22 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
                     Output.info("Wpisany tekst: " + inputText);
                 }
             });
-        } else if (bid.equals("files_test")) {
-            Output.info("Zapisywanie pliku...");
-            try {
-                files.saveFile(files.path(files.internalAppDirectory(), "dupa.txt"), "gówno");
-            } catch (IOException e) {
-                Output.error(e);
-            }
-            Output.info("Odczytywanie pliku...");
-            String result = null;
-            try {
-                result = files.openFileString(files.path(files.internalAppDirectory(), "dupa.txt"));
-            } catch (IOException e) {
-                Output.error(e);
-            }
-            Output.info("plik dupa.txt:\n" + result);
+        } else if (bid.equals("login")) {
+            inputmanager.inputScreenShow("Login:", new InputManager.InputHandler() {
+                @Override
+                public void onInput(String inputText) {
+                    App.geti().login = inputText;
+                    Output.info("Wpisany login: " + inputText);
+                    inputmanager.inputScreenShow("Hasło:", new InputManager.InputHandler() {
+                        @Override
+                        public void onInput(String inputText) {
+                            App.geti().pass = inputText;
+                            Output.info("Wpisane hasło: " + inputText);
+                            login();
+                        }
+                    });
+                }
+            });
         } else {
             Output.error("Nie obsłużono zdarzenia dla przycisku: " + bid);
         }
@@ -216,5 +219,24 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
 
     public boolean options_select(int id) {
         return false;
+    }
+
+
+    public void login() {
+        List<InternetManager.Variable> data = new ArrayList<>();
+        data.add(new Variable("login", App.geti().login));
+        data.add(new Variable("pass", App.geti().pass));
+        internetmanager.downloadPOST("http://igrek.cba.pl/findme/login.php", data, new ResponseHandler() {
+            @Override
+            public void onResponse(InternetTask internetTask) {
+                if (internetTask.isCorrect()) {
+                    Output.info("Kod odpowiedzi: " + internetTask.getResponseCode());
+                    Output.info("Odpowiedź: " + internetTask.getResponse());
+                } else {
+                    Output.info("Błąd odbierania");
+                }
+            }
+        });
+        Output.info("Próba logowania...");
     }
 }

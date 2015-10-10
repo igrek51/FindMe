@@ -82,7 +82,6 @@ public class InputManager {
         visible = false;
         if(inputHandler!=null){
             inputHandler.onInput(editText.getText().toString()); //wywołanie zdarzenia
-            inputHandler = null;
         }
     }
 
