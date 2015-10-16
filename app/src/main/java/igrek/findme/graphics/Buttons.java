@@ -91,15 +91,15 @@ public class Buttons {
         buttons.clear();
     }
 
-    public Button find(String id) {
+    public Button find(String id) throws Exception {
         for (Button b : buttons) {
             if (b.id.equals(id)) return b;
         }
-        Output.error("Nie znaleziono przycisku o nazwie: " + id);
+        Output.errorthrow("Nie znaleziono przycisku o nazwie: " + id);
         return null;
     }
 
-    public void setActive(String id, boolean set) {
+    public void setActive(String id, boolean set) throws Exception {
         Button b = find(id);
         if (b == null) return;
         b.active = set;

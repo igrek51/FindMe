@@ -59,14 +59,9 @@ public class Files {
         return data;
     }
 
-    public String openFileString(String filename) throws IOException {
+    public String openFileString(String filename) throws Exception {
         byte[] bytes = openFile(filename);
-        try {
-            return new String(bytes, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            Output.error(e);
-            return null;
-        }
+        return new String(bytes, "UTF-8");
     }
 
     public void saveFile(String filename, byte[] data) throws IOException, FileNotFoundException {

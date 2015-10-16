@@ -18,20 +18,18 @@ public class Sensors implements SensorEventListener {
     List<Sensor> msensorList;
     public final int sensor_type = Sensor.TYPE_ACCELEROMETER;
 
-    public Sensors(Activity activity) {
+    public Sensors(Activity activity) throws Exception {
         this.activity = activity;
         sensorManager = (SensorManager) activity.getSystemService(this.activity.SENSOR_SERVICE);
         if (sensorManager == null) {
             Output.errorCritical("Błąd usługi sensorów");
-            return;
         }
         msensorList = sensorManager.getSensorList(Sensor.TYPE_ALL);
         list_sensors();
         //szukanie wybranego sensora
         sensor = sensorManager.getDefaultSensor(sensor_type);
         if (sensor == null) {
-            Output.error("Nie znaleziono sensora");
-            return;
+            Output.errorthrow("Nie znaleziono sensora");
         }
     }
 

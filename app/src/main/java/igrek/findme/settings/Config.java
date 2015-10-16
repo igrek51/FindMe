@@ -22,6 +22,7 @@ public class Config {
     public final String logTag = "AppLog";
     public final int echo_spaces = 40;
     public final int echo_showtime = 1800; //[ms]
+    public final int echo_line_max = 55; //maksymalna liczba znaków w 1 wierszu
     //  SCREEN
     public final int fullscreen_flag = WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
     public final boolean fullscreen = true;

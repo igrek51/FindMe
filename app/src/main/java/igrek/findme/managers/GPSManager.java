@@ -15,30 +15,25 @@ import igrek.findme.system.Output;
 public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStatus.NmeaListener {
     Activity activity = null;
     LocationManager locationManager = null;
-    boolean available = false; //TODO: kiedy zmieniać avaible? rozłączanie i łapanie sygnału
+    boolean available = false; //TODO: kiedy zmieniać available? rozłączanie i łapanie sygnału
 
-    public GPSManager(Activity activity) {
+    public GPSManager(Activity activity) throws Exception {
         this.activity = activity;
         locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
         if (locationManager == null) {
             Output.errorCritical("Błąd usługi lokalizacji");
-            return;
         }
         Output.info("Available providers:");
         for (String provider : locationManager.getAllProviders()) {
             Output.info(provider);
         }
-        try {
-            locationManager.addGpsStatusListener(this);
-            locationManager.addNmeaListener(this);
-            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Config.geti().location.min_updates_time, Config.geti().location.min_updates_distance, this);
-            }
-            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, Config.geti().location.min_updates_time, Config.geti().location.min_updates_distance, this);
-            }
-        } catch (RuntimeException ex) {
-            Output.error(ex);
+        locationManager.addGpsStatusListener(this);
+        locationManager.addNmeaListener(this);
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Config.geti().location.min_updates_time, Config.geti().location.min_updates_distance, this);
+        }
+        if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, Config.geti().location.min_updates_time, Config.geti().location.min_updates_distance, this);
         }
         Output.info("Moduł lokalizacji uruchomiony.");
     }
@@ -59,7 +54,7 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
     @Override
     public void onGpsStatusChanged(int event) {
         Output.info("GpsStatusChanged: " + gpsStatusToString(event));
-        if(event==GpsStatus.GPS_EVENT_FIRST_FIX){
+        if (event == GpsStatus.GPS_EVENT_FIRST_FIX) {
             available = true;
         }
         if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS || event == GpsStatus.GPS_EVENT_FIRST_FIX) {

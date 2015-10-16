@@ -43,9 +43,21 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         buttons = new Buttons();
         timer = new TimerManager(this, Config.geti().timer_interval0);
         random = new Random();
-        sensors = new Sensors(activity);
-        gps = new GPSManager(activity);
-        internetmanager = new InternetManager(activity);
+        try {
+            sensors = new Sensors(activity);
+        } catch (Exception e) {
+            Output.error(e);
+        }
+        try {
+            gps = new GPSManager(activity);
+        } catch (Exception e) {
+            Output.error(e);
+        }
+        try {
+            internetmanager = new InternetManager(activity);
+        } catch (Exception e) {
+            Output.error(e);
+        }
         files = new Files(activity);
         Output.log("Utworzenie aplikacji.");
     }
@@ -54,7 +66,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
     public void timer_run() {
         if (!running) return;
         update();
-        if (inputmanager!=null && !inputmanager.visible) {
+        if (inputmanager != null && !inputmanager.visible) {
             graphics.invalidate();
         }
     }
@@ -97,19 +109,23 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
 
     public void update() {
         if (!init) return;
-        //obsługa przycisków
-        if (buttons.isClicked()) {
-            buttonsExecute(buttons.clickedId());
-        }
-        if (app.id_user > 0 && gps.isGPSAvailable()) { //zalogowany i ma sygnał gps
-            if (System.currentTimeMillis() > app.last_position_update + config.location.position_update_period) {
-                app.last_position_update = System.currentTimeMillis();
-                sendGPSPosition();
+        try {
+            //obsługa przycisków
+            if (buttons.isClicked()) {
+                buttonsExecute(buttons.clickedId());
             }
+            if (app.id_user > 0 && gps.isGPSAvailable()) { //zalogowany i ma sygnał gps
+                if (System.currentTimeMillis() > app.last_position_update + config.location.position_update_period) {
+                    app.last_position_update = System.currentTimeMillis();
+                    sendGPSPosition();
+                }
+            }
+        } catch (Exception e) {
+            Output.error(e);
         }
     }
 
-    public void buttonsExecute(String bid) {
+    public void buttonsExecute(String bid) throws Exception {
         if (bid.equals("exit")) {
             control.executeEvent(Types.ControlEvent.BACK);
         } else if (bid.equals("clear")) {
@@ -117,7 +133,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         } else if (bid.equals("get")) {
             internetmanager.GET("http://igrek.cba.pl/findme/get.php?name=dupa", new InternetManager.ResponseHandler() {
                 @Override
-                public void onResponse(InternetManager.InternetTask internetTask) {
+                public void onResponse(InternetManager.InternetTask internetTask) throws Exception {
                     if (internetTask.isCorrect()) {
                         Output.info("Kod odpowiedzi: " + internetTask.getResponseCode());
                         Output.info("Odpowiedź: " + internetTask.getResponse());
@@ -151,7 +167,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
                 }
             });
         } else {
-            Output.error("Nie obsłużono zdarzenia dla przycisku: " + bid);
+            Output.errorthrow("Nie obsłużono zdarzenia dla przycisku: " + bid);
         }
     }
 
@@ -210,18 +226,18 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         Output.info("Próba logowania...");
         internetmanager.POST("http://igrek.cba.pl/findme/login.php", data, new ResponseHandler() {
             @Override
-            public void onSuccess(InternetTask internetTask) {
+            public void onSuccess(InternetTask internetTask) throws Exception {
                 app.id_user = internetTask.getResponse2Int();
                 Output.info("Zalogowano, ID: " + app.id_user);
             }
         });
     }
 
-    public void sendGPSPosition() {
+    public void sendGPSPosition() throws Exception {
         Output.info("Wysyłanie położenia...");
         Location location = gps.getGPSLocation();
         if (location == null) {
-            Output.error("Błąd location");
+            Output.errorthrow("Błąd location");
         } else {
             List<Variable> data = new ArrayList<>();
             data.add(new Variable("id_user", app.id_user));
@@ -241,7 +257,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
             }
             internetmanager.POST("http://igrek.cba.pl/findme/send_location.php", data, new ResponseHandler() {
                 @Override
-                public void onSuccess(InternetTask internetTask) {
+                public void onSuccess(InternetTask internetTask) throws Exception {
                     if (internetTask.isCorrect()) {
                         Output.info("Wysłanie położenia powiodło się.");
                     }

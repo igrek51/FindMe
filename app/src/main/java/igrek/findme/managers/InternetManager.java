@@ -24,16 +24,14 @@ import igrek.findme.settings.Config;
 import igrek.findme.system.Output;
 
 public class InternetManager {
-    public InternetManager(Activity activity) {
+    public InternetManager(Activity activity) throws Exception {
         ConnectivityManager connMgr = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connMgr == null) {
             Output.errorCritical("Błąd usługi połączenia");
-            return;
         }
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo == null) {
-            Output.error("Błąd połączenia z internetem");
-            return;
+            Output.errorthrow("Błąd połączenia z internetem");
         }
         Output.log("networkInfo.isAvailable() = " + networkInfo.isAvailable());
         Output.log("networkInfo.isConnected() = " + networkInfo.isConnected());
@@ -47,20 +45,20 @@ public class InternetManager {
     }
 
     public abstract static class ResponseHandler {
-        public void onResponse(InternetTask internetTask){
+        public void onResponse(InternetTask internetTask) throws Exception {
             //domyślna obsługa odpowiedzi
             if (internetTask.isCorrect()) {
                 if (internetTask.getResponse1Int() == Config.geti().connection.success_code) {
                     onSuccess(internetTask);
                 } else {
-                    Output.error(internetTask.getResponse2String());
+                    Output.errorthrow(internetTask.getResponse2String());
                 }
             } else {
                 Output.info("Błąd odbierania pakietu odpowiedzi");
             }
         }
 
-        public void onSuccess(InternetTask internetTask){
+        public void onSuccess(InternetTask internetTask) throws Exception {
             //...
         }
     }
@@ -87,21 +85,20 @@ public class InternetManager {
             return response_code;
         }
 
-        public String getResponse() {
+        public String getResponse() throws Exception {
             if (error) {
-                Output.error("getResponse: Błąd podczas pobierania odpowiedzi");
-                return "";
+                Output.errorthrow("getResponse: Błąd podczas pobierania odpowiedzi");
             }
             return response;
         }
 
-        public List<String> getResponseStrings() {
+        public List<String> getResponseStrings() throws Exception {
             String resp = getResponse();
             //podział znakami \n
             return split(resp, '\n');
         }
 
-        public int getResponse1Int() {
+        public int getResponse1Int() throws Exception {
             String resp = getResponse();
             //obcięcie numeru odpowiedzi i pozostałych danych
             int first_space = resp.indexOf("\n");
@@ -111,26 +108,26 @@ public class InternetManager {
             try {
                 return Integer.parseInt(resp);
             } catch (NumberFormatException e) {
-                Output.error("getResponse1Int: Nieprawidłowy format liczby: "+resp);
+                Output.errorthrow("getResponse1Int: Nieprawidłowy format liczby: " + resp);
                 return 0;
             }
         }
 
-        public String getResponse2String() {
+        public String getResponse2String() throws Exception {
             List<String> lista = getResponseStrings();
             if (lista.size() < 2) {
-                Output.error("getResponse2String: Brak drugiego Stringa w odpowiedzi");
+                Output.errorthrow("getResponse2String: Brak drugiego Stringa w odpowiedzi");
                 return "";
             } else {
                 return lista.get(1);
             }
         }
 
-        public int getResponse2Int() {
+        public int getResponse2Int() throws Exception {
             try {
                 return Integer.parseInt(getResponse2String());
             } catch (NumberFormatException e) {
-                Output.error("getResponse2Int: Nieprawidłowy format liczby");
+                Output.errorthrow("getResponse2Int: Nieprawidłowy format liczby");
                 return 0;
             }
         }
@@ -151,7 +148,11 @@ public class InternetManager {
     private class DownloadTask extends AsyncTask<InternetTask, Void, Void> {
         @Override
         protected Void doInBackground(InternetTask... its) {
-            executeTask(its[0]);
+            try {
+                executeTask(its[0]);
+            }catch(Exception e){
+                Output.error(e);
+            }
             return null;
         }
     }
@@ -159,7 +160,8 @@ public class InternetManager {
     public static class Variable {
         public String name;
         public String value;
-        public Variable(String name, String value){
+
+        public Variable(String name, String value) {
             this.name = name;
             this.value = value;
         }
@@ -175,18 +177,13 @@ public class InternetManager {
         }
 
 
-        public String toURLString() {
-            try {
-                return URLEncoder.encode(name, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                Output.error(e);
-                return "";
-            }
+        public String toURLString() throws Exception {
+            return URLEncoder.encode(name, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8");
         }
     }
 
-    private String getDataQuery(List<Variable> data) {
-        if(data==null) return "";
+    private String getDataQuery(List<Variable> data) throws Exception {
+        if (data == null) return "";
         StringBuilder result = new StringBuilder();
         boolean first = true;
         for (Variable var : data) {
@@ -197,7 +194,7 @@ public class InternetManager {
         return result.toString();
     }
 
-    private void methodPOST(HttpURLConnection conn, List<Variable> data) throws IOException {
+    private void methodPOST(HttpURLConnection conn, List<Variable> data) throws Exception {
         conn.setRequestMethod("POST");
         OutputStream os = conn.getOutputStream();
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
@@ -207,7 +204,7 @@ public class InternetManager {
         os.close();
     }
 
-    private void executeTask(InternetTask internetTask) {
+    private void executeTask(InternetTask internetTask) throws Exception {
         InputStream is = null;
         try {
             URL url = new URL(internetTask.url);
@@ -227,15 +224,11 @@ public class InternetManager {
             // konwersja na String
             internetTask.response = readInputStream(is, Config.geti().connection.max_response_size);
         } catch (Exception ex) {
-            Output.error(ex);
             internetTask.error = true; //wystąpił błąd
+            throw ex;
         } finally {
             if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    Output.error("Błąd zamykania strumienia danych");
-                }
+                is.close();
             }
             if (internetTask.responseHandler != null) { //wywołanie zdarzenia
                 internetTask.responseHandler.onResponse(internetTask);
