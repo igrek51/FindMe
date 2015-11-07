@@ -34,7 +34,7 @@ public class TouchPanel {
     public boolean touch_down(float touch_x, float touch_y) {
         start_x = touch_x;
         start_y = touch_y;
-        controlAbsolute(touch_x, touch_y);
+        //controlAbsolute(touch_x, touch_y);
         return true;
         //return false;
     }
@@ -51,7 +51,7 @@ public class TouchPanel {
         return false;
     }
 
-    public void controlAbsolute(float touch_x, float touch_y) {
+    public void controlAbsolute(float touch_x, float touch_y) throws Exception {
         //sprawdzenie kółka w środku
         if (Control.isPointInCircle(touch_x, touch_y, w / 2, h / 2, Config.geti().touch.center_radius * w)) {
             engine.control.executeEvent(Types.ControlEvent.OK);
@@ -76,7 +76,7 @@ public class TouchPanel {
         }
     }
 
-    public void controlRealtive(float touch_x, float touch_y) {
+    public void controlRealtive(float touch_x, float touch_y) throws Exception {
         float distance = (float) Math.sqrt((touch_x - start_x) * (touch_x - start_x) + (touch_y - start_y) * (touch_y - start_y));
         if (distance <= cm_to_pixels(config.touch.max_assert_distance)) {
             engine.control.executeEvent(Types.ControlEvent.OK);

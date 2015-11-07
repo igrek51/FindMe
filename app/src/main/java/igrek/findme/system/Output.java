@@ -8,6 +8,12 @@ import igrek.findme.settings.App;
 import igrek.findme.settings.Config;
 
 public class Output {
+    public static class SoftErrorException extends Exception {
+        public SoftErrorException(String e) {
+            super(e);
+        }
+    }
+
     public static void reset() {
         echos = "";
     }
@@ -48,13 +54,16 @@ public class Output {
     }
 
     public static void error(Exception ex) {
-        String ex_print = ex.getClass().getName() + "] " + ex.getMessage();
-        echoMultiline("[EXCEPTION] " + ex_print);
-        log("[EXCEPTION] " + ex_print);
+        if (ex instanceof SoftErrorException) {
+            echoMultiline("[BŁĄD] " + ex.getMessage());
+        } else {
+            echoMultiline("[" + ex.getClass().getName() + "] " + ex.getMessage());
+        }
+        log("[EXCEPTION - " + ex.getClass().getName() + "] " + ex.getMessage());
     }
 
     public static void errorthrow(String e) throws Exception {
-        throw new Exception(e);
+        throw new SoftErrorException(e);
     }
 
     public static void errorCritical(String e) throws Exception {

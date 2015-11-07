@@ -22,7 +22,7 @@ public class Config {
     public final String logTag = "AppLog";
     public final int echo_spaces = 40;
     public final int echo_showtime = 1800; //[ms]
-    public final int echo_line_max = 55; //maksymalna liczba znaków w 1 wierszu
+    public final int echo_line_max = 40; //maksymalna liczba znaków w 1 wierszu
     //  SCREEN
     public final int fullscreen_flag = WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
     public final boolean fullscreen = true;
@@ -35,7 +35,7 @@ public class Config {
     public final int buttons_fontsize = 12;
     public final int button_padding_h = 10;
     public final int button_padding_v = 5;
-    public final int button_height = 25;
+    public final int button_height = 40;
     //  CZCIONKI
     public final int fontsize = 12;
     public final int lineheight = 13;
@@ -77,10 +77,13 @@ public class Config {
     //  LOKALIZACJA
     public Location location = new Location();
     public class Location {
-        public final int min_updates_time = 5000; //[ms]
+        public final int min_updates_time = 5000; //[ms] częstotliwość aktualizacji położenia w module GPS
         public final int min_updates_distance = 0; //[m]
-        public final int position_update_period = 5000;
+        public final int position_update_period = 10000; //[ms] - częstotliwość wysyłania do serwera
+        public final int expired_time = 15000; //[ms] minimalny czas braku aktywności lokalizatora, aby uznać, że jest nieaktywny
     }
     //  KLAWIATURA EKRANOWA
     public final int keyboard_min_height = 100; //px
+    //  KOMPAS
+    public final float compass_scale = 0.7f;
 }

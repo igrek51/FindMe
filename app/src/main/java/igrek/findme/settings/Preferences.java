@@ -58,4 +58,8 @@ public class Preferences {
     public String getString(String name) {
         return getString(name, "");
     }
+
+    public boolean exists(String name) {
+        return settings.contains(name);
+    }
 }

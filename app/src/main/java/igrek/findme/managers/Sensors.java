@@ -16,7 +16,7 @@ public class Sensors implements SensorEventListener {
     Sensor sensor = null;
     float values[] = new float[3];
     List<Sensor> msensorList;
-    public final int sensor_type = Sensor.TYPE_ACCELEROMETER;
+    public final int sensor_type = Sensor.TYPE_ROTATION_VECTOR;
 
     public Sensors(Activity activity) throws Exception {
         this.activity = activity;

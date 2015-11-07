@@ -33,15 +33,19 @@ public class InternetManager {
         if (networkInfo == null) {
             Output.errorthrow("Błąd połączenia z internetem");
         }
-        Output.log("networkInfo.isAvailable() = " + networkInfo.isAvailable());
-        Output.log("networkInfo.isConnected() = " + networkInfo.isConnected());
         if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
-            Output.info("Wifirifi dostępne.");
+            Output.info("Wifirifi jest dostępne.");
         }
         if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
-            Output.info("Dane pakietowe dostępne.");
+            Output.info("Dane pakietowe są dostępne.");
         }
-        Output.info("Moduł połączenia internetowego uruchomiony.");
+        if(!networkInfo.isAvailable()){
+            Output.errorthrow("Brak dostępnych połączeń internetowych.");
+        }
+        if(!networkInfo.isConnected()){
+            Output.errorthrow("Brak połączenia internetowego.");
+        }
+        Output.info("Połączenie internetowe jest dostępne :)");
     }
 
     public abstract static class ResponseHandler {
@@ -54,7 +58,7 @@ public class InternetManager {
                     Output.errorthrow(internetTask.getResponse2String());
                 }
             } else {
-                Output.info("Błąd odbierania pakietu odpowiedzi");
+                Output.errorthrow("Błąd odbierania pakietu odpowiedzi");
             }
         }
 

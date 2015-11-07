@@ -1,6 +1,7 @@
 package igrek.findme.logic;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.location.Location;
 
 import java.util.ArrayList;
@@ -30,8 +31,6 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
     public InternetManager internetmanager;
     public Preferences preferences;
     public InputManager inputmanager = null;
-    public Files files;
-
 
     public Engine(Activity activity) {
         this.activity = activity;
@@ -58,13 +57,14 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         } catch (Exception e) {
             Output.error(e);
         }
-        files = new Files(activity);
+        //files = new Files(activity);
         Output.log("Utworzenie aplikacji.");
     }
 
     @Override
     public void timer_run() {
         if (!running) return;
+        if (!init) return;
         update();
         if (inputmanager != null && !inputmanager.visible) {
             graphics.invalidate();
@@ -72,7 +72,6 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
     }
 
     public void init() {
-        init = true;
         //po inicjalizacji grafiki - po ustaleniu rozmiarów
         Output.log("Inicjalizacja (po starcie grafiki).");
         touchpanel = new TouchPanel(this, graphics.w, graphics.h);
@@ -80,12 +79,22 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         inputmanager = new InputManager(activity, graphics);
         //przyciski
         Buttons.Button b;
-        buttons.add("Wyjdź", "exit", graphics.w, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.RIGHT | Types.Align.BOTTOM);
-        b = buttons.add("Czyść", "clear", graphics.w / 2, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.BOTTOM);
-        buttons.add("Zaloguj", "login", graphics.w / 2, b.y - b.h, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.TOP);
-        buttons.add("Klawiatura", "keyboard_show", graphics.w / 2, 0, 0, 0, Types.Align.HADJUST | Types.Align.HCENTER | Types.Align.TOP);
-        b = buttons.add("SQL GET", "sql_get", 0, graphics.h, 0, 0, Types.Align.HADJUST | Types.Align.LEFT | Types.Align.BOTTOM);
-        buttons.add("GET", "get", 0, graphics.h - b.h, 0, 0, Types.Align.HADJUST | Types.Align.LEFT | Types.Align.BOTTOM);
+        b = buttons.add("Znajdź mnie, Iro!", "login", 0, 0, graphics.w, 120);
+        b = buttons.add("Ustawienia", "preferences", 0, b.y + b.h, graphics.w, 0);
+        b = buttons.add("Kompas", "compass", 0, b.y + b.h, graphics.w, 0);
+        b = buttons.add("Czyść konsolę", "clear", 0, b.y + b.h, graphics.w, 0);
+        b = buttons.add("Minimalizuj", "minimize", 0, b.y + b.h, graphics.w, 0);
+        buttons.add("Zakończ", "exit", 0, b.y + b.h, graphics.w, 0);
+        buttons.add("Powrót", "back", 0, graphics.h, graphics.w, 0, Types.Align.BOTTOM);
+        preferencesLoad();
+        try {
+            setAppMode(Types.AppMode.MENU);
+        } catch (Exception e) {
+            Output.error(e);
+        }
+        //odczekanie przed czyszczeniem konsoli
+        Output.lastEcho = System.currentTimeMillis() + 4000;
+        init = true;
     }
 
     public void pause() {
@@ -108,7 +117,6 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
     }
 
     public void update() {
-        if (!init) return;
         try {
             //obsługa przycisków
             if (buttons.isClicked()) {
@@ -130,42 +138,28 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
             control.executeEvent(Types.ControlEvent.BACK);
         } else if (bid.equals("clear")) {
             Output.echos = "";
-        } else if (bid.equals("get")) {
-            internetmanager.GET("http://igrek.cba.pl/findme/get.php?name=dupa", new InternetManager.ResponseHandler() {
-                @Override
-                public void onResponse(InternetManager.InternetTask internetTask) throws Exception {
-                    if (internetTask.isCorrect()) {
-                        Output.info("Kod odpowiedzi: " + internetTask.getResponseCode());
-                        Output.info("Odpowiedź: " + internetTask.getResponse());
-                    } else {
-                        Output.info("Błąd odbierania");
-                    }
-                }
-            });
-            Output.info("Wysłano żądanie.");
-        } else if (bid.equals("keyboard_show")) {
-            inputmanager.inputScreenShow("Podaj nazwę:", new InputManager.InputHandler() {
-                @Override
-                public void onInput(String inputText) {
-                    Output.info("Wpisany tekst: " + inputText);
-                }
-            });
-        } else if (bid.equals("login")) {
+        } else if (bid.equals("preferences")) {
             inputmanager.inputScreenShow("Login:", new InputManager.InputHandler() {
                 @Override
                 public void onInput(String inputText) {
                     app.login = inputText;
-                    Output.info("Wpisany login: " + inputText);
                     inputmanager.inputScreenShow("Hasło:", new InputManager.InputHandler() {
                         @Override
                         public void onInput(String inputText) {
                             app.pass = inputText;
-                            Output.info("Wpisane hasło: " + inputText);
-                            login();
+                            preferencesSave();
                         }
                     });
                 }
             });
+        } else if (bid.equals("login")) {
+            login();
+        } else if (bid.equals("compass")) {
+            setAppMode(Types.AppMode.COMPASS);
+        } else if (bid.equals("back")) {
+            setAppMode(Types.AppMode.MENU);
+        } else if (bid.equals("minimize")) {
+            minimize();
         } else {
             Output.errorthrow("Nie obsłużono zdarzenia dla przycisku: " + bid);
         }
@@ -207,19 +201,40 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
             inputmanager.inputScreenHide();
             return;
         }
-        control.executeEvent(Types.ControlEvent.BACK);
+        try{
+            control.executeEvent(Types.ControlEvent.BACK);
+        }catch (Exception e) {
+            Output.error(e);
+        }
     }
 
     public void keycode_menu() {
-        control.executeEvent(Types.ControlEvent.MENU);
+        try{
+            control.executeEvent(Types.ControlEvent.MENU);
+        }catch (Exception e) {
+            Output.error(e);
+        }
     }
 
     public boolean options_select(int id) {
         return false;
     }
 
+    public void minimize() {
+        Intent startMain = new Intent(Intent.ACTION_MAIN);
+        startMain.addCategory(Intent.CATEGORY_HOME);
+        startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        activity.startActivity(startMain);
+    }
 
-    public void login() {
+
+    public void login() throws Exception {
+        if (app.login.length() == 0) {
+            Output.errorthrow("Nie podano loginu.");
+        }
+        if (app.pass.length() == 0) {
+            Output.errorthrow("Nie podano hasła.");
+        }
         List<Variable> data = new ArrayList<>();
         data.add(new Variable("login", app.login));
         data.add(new Variable("pass", app.pass));
@@ -229,6 +244,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
             public void onSuccess(InternetTask internetTask) throws Exception {
                 app.id_user = internetTask.getResponse2Int();
                 Output.info("Zalogowano, ID: " + app.id_user);
+                Output.info("Oczekiwanie na sygnał GPS...");
             }
         });
     }
@@ -237,7 +253,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         Output.info("Wysyłanie położenia...");
         Location location = gps.getGPSLocation();
         if (location == null) {
-            Output.errorthrow("Błąd location");
+            Output.errorthrow("Błąd location = null");
         } else {
             List<Variable> data = new ArrayList<>();
             data.add(new Variable("id_user", app.id_user));
@@ -259,10 +275,47 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
                 @Override
                 public void onSuccess(InternetTask internetTask) throws Exception {
                     if (internetTask.isCorrect()) {
-                        Output.info("Wysłanie położenia powiodło się.");
+                        Output.info("Wysłano położenie.");
                     }
                 }
             });
+        }
+    }
+
+    public void preferencesSave() {
+        //zapisanie do shared preferences
+        preferences.setBoolean("login_set", true);
+        preferences.setString("login_login", app.login);
+        preferences.setString("login_pass", app.pass);
+        Output.info("Zapisano preferencje logowania.");
+    }
+
+    public void preferencesLoad() {
+        //wczytanie z shared preferences
+        if (preferences.exists("login_set")) {
+            app.login = preferences.getString("login_login");
+            app.pass = preferences.getString("login_pass");
+            Output.info("Wczytano preferencje logowania.");
+        } else {
+            app.login = "";
+            app.pass = "";
+        }
+    }
+
+    public void setAppMode(Types.AppMode mode) throws Exception {
+        app.mode = mode;
+        buttons.disableAllButtons();
+        if (app.mode == Types.AppMode.MENU) {
+            buttons.setActive("login", true);
+            buttons.setActive("preferences", true);
+            buttons.setActive("compass", true);
+            buttons.setActive("clear", true);
+            buttons.setActive("minimize", true);
+            buttons.setActive("exit", true);
+            sensors.unregister();
+        } else if (app.mode == Types.AppMode.COMPASS) {
+            buttons.setActive("back", true);
+            sensors.register();
         }
     }
 }

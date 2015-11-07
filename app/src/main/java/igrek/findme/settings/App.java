@@ -1,6 +1,7 @@
 package igrek.findme.settings;
 
 import igrek.findme.logic.Engine;
+import igrek.findme.logic.Types;
 import igrek.findme.system.Output;
 
 public class App {
@@ -28,6 +29,7 @@ public class App {
     public Engine engine;
 
     //  ZMIENNE APLIKACJI
+    public Types.AppMode mode = Types.AppMode.MENU;
     //rozmiar ekranu
     public int w = 0;
     public int h = 0;

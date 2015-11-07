@@ -42,8 +42,14 @@ public class Control {
         }
     }
 
-    public void executeEvent(Types.ControlEvent event) {
-        if (event == Types.ControlEvent.BACK) engine.quit();
+    public void executeEvent(Types.ControlEvent event) throws Exception {
+        if (event == Types.ControlEvent.BACK){
+            if(app.mode == Types.AppMode.MENU){
+                engine.quit();
+            }else if(app.mode == Types.AppMode.COMPASS){
+                engine.setAppMode(Types.AppMode.MENU);
+            }
+        }
 
     }
 }

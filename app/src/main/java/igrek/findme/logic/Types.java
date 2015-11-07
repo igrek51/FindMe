@@ -48,4 +48,8 @@ public class Types {
         public static final int ABSOLUTE = 0;
         public static final int RELATIVE = 1;
     }
+
+    public enum AppMode {
+        MENU, COMPASS
+    }
 }
