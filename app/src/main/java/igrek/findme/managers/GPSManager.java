@@ -22,7 +22,6 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
     Location lastNetworkLocation = null;
     long GPSTimeOffset = 0; //przesunięcie w czasie: GPSTime = SystemTime + offset
     long NetworkTimeOffset = 0; //przesunięcie w czasie: NetworkTime = SystemTime + offset
-    //TODO: available na podstawie czasu ostatniej lokalizacji - po przekroczeniu i braku odpowiedzi - brak sygnału
 
     public GPSManager(Activity activity) throws Exception {
         this.activity = activity;
@@ -110,12 +109,12 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
             lastGPSLocation = loc;
             GPSTimeOffset = lastGPSLocation.getTime() - System.currentTimeMillis();
             Output.info("Lokalizacja (GPS): " + loc.getLongitude() + ", " + loc.getLatitude() + " (" + loc.getExtras().getInt("satellites") + ")");
-        }else if (loc.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
+        } else if (loc.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
             lastNetworkLocation = loc;
             NetworkTimeOffset = lastNetworkLocation.getTime() - System.currentTimeMillis();
-            Output.info("Lokalizacja (Internet): " + loc.getLongitude() + ", " + loc.getLatitude() + " (" + loc.getExtras().getInt("satellites") + ")");
-        }else{
-            Output.info("Nieznany provider: "+ loc.getProvider());
+            Output.info("Lokalizacja (Internet): " + loc.getLongitude() + ", " + loc.getLatitude());
+        } else {
+            Output.info("Nieznany provider: " + loc.getProvider());
         }
         String details = "";
         details += "Provider: " + loc.getProvider();
@@ -133,7 +132,7 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
         Output.info("Location ProviderDisabled: " + provider);
         if (provider.equals(LocationManager.GPS_PROVIDER)) {
             lastGPSLocation = null;
-        }else if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
+        } else if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
             lastNetworkLocation = null;
         }
     }
@@ -161,30 +160,29 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
     }
 
     public Location getLocation() throws Exception {
-        if(isGPSAvailable()) return getGPSLocation();
-        if(isInternetAvailable()) return getInternetLocation();
+        if (isGPSAvailable()) return getGPSLocation();
+        if (isInternetAvailable()) return getInternetLocation();
         Output.errorthrow("Brak ostatniej lokalizacji");
         return null;
     }
 
-    //TODO: 2 metody lokalizacji - GPS, Internet
     public boolean isGPSAvailable() {
-        if(lastGPSLocation == null) return false;
-        if(System.currentTimeMillis() + GPSTimeOffset > lastGPSLocation.getTime() + Config.geti().location.expired_time){
+        if (lastGPSLocation == null) return false;
+        if (System.currentTimeMillis() + GPSTimeOffset > lastGPSLocation.getTime() + Config.geti().location.expired_time) {
             return false;
         }
         return true;
     }
 
     public boolean isInternetAvailable() {
-        if(lastNetworkLocation == null) return false;
-        if(System.currentTimeMillis() + NetworkTimeOffset > lastNetworkLocation.getTime() + Config.geti().location.expired_time){
+        if (lastNetworkLocation == null) return false;
+        if (System.currentTimeMillis() + NetworkTimeOffset > lastNetworkLocation.getTime() + Config.geti().location.expired_time) {
             return false;
         }
         return true;
     }
 
-    public boolean isLocationAvailable(){
+    public boolean isLocationAvailable() {
         return isGPSAvailable() || isInternetAvailable();
     }
 }

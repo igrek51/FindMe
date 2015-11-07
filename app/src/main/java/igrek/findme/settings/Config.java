@@ -20,7 +20,7 @@ public class Config {
     //STAŁE
     //  OUTPUT
     public final String logTag = "AppLog";
-    public final int echo_spaces = 40;
+    public final int echo_spaces = 43;
     public final int echo_showtime = 1800; //[ms]
     public final int echo_line_max = 40; //maksymalna liczba znaków w 1 wierszu
     //  SCREEN

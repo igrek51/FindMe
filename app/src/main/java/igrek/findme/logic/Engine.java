@@ -122,7 +122,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
             if (buttons.isClicked()) {
                 buttonsExecute(buttons.clickedId());
             }
-            if (app.id_user > 0 && gps.isGPSAvailable()) { //zalogowany i ma sygnał gps
+            if (app.id_user > 0 && gps.isLocationAvailable()) { //zalogowany i ma sygnał gps (lub internet)
                 if (System.currentTimeMillis() > app.last_position_update + config.location.position_update_period) {
                     app.last_position_update = System.currentTimeMillis();
                     sendGPSPosition();
@@ -251,9 +251,9 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
 
     public void sendGPSPosition() throws Exception {
         Output.info("Wysyłanie położenia...");
-        Location location = gps.getGPSLocation();
+        Location location = gps.getLocation();
         if (location == null) {
-            Output.errorthrow("Błąd location = null");
+            Output.errorthrow("Brak lokalizacji (location = null)");
         } else {
             List<Variable> data = new ArrayList<>();
             data.add(new Variable("id_user", app.id_user));
