@@ -13,17 +13,30 @@ import igrek.findme.system.Output;
 public class Buttons {
     public List<Button> buttons = new ArrayList<>();
 
+    public interface ButtonActionListener {
+        void clicked() throws Exception;
+    }
+
     public class Button {
-        public Button(String text, String id, float x, float y, float w, float h) {
+        public float x, y;
+        public float w, h;
+        public String text, id;
+        public int clicked = 0; //0 - nie wciśnięty, 1 - przyciśnięty (nie puszczony), 2 - wciśnięty i puszczony (kliknięty)
+        public boolean visible = true;
+        public ButtonActionListener actionListener;
+
+        public Button(String text, String id, float x, float y, float w, float h, ButtonActionListener actionListener) {
             this.text = text;
             this.id = id;
             this.x = x;
             this.y = y;
             this.w = w;
             this.h = h;
+            this.actionListener = actionListener;
         }
 
         public Button setPos(float x, float y, float w, float h, int align) {
+            //rozmiar
             this.w = w;
             if (h == 0) h = Config.Buttons.height; //domyślna wysokość
             this.h = h;
@@ -32,26 +45,27 @@ public class Buttons {
                 paint2.setTextSize(Config.Buttons.fontsize);
                 Rect textBounds = new Rect();
                 paint2.getTextBounds(text, 0, text.length(), textBounds);
-                if (Types.isFlagSet(align,  Types.Align.HADJUST)) {
+                if (Types.isFlagSet(align, Types.Align.HADJUST)) { //automatyczne dobranie szerokości
                     this.w = textBounds.width() + 2 * Config.Buttons.padding_h;
                 }
-                if (Types.isFlagSet(align, Types.Align.VADJUST)) {
+                if (Types.isFlagSet(align, Types.Align.VADJUST)) { //automatyczne dobranie wysokości
                     this.h = textBounds.height() + 2 * Config.Buttons.padding_v;
                 }
             }
+            //pozycja
             //domyślne wartości
-            if ((align & 0x0f) == 0) align |=  Types.Align.LEFT;
-            if ((align & 0xf0) == 0) align |=  Types.Align.TOP;
-            if (Types.isFlagSet(align,  Types.Align.LEFT)) {
+            if ((align & 0x0f) == 0) align |= Types.Align.LEFT;
+            if ((align & 0xf0) == 0) align |= Types.Align.TOP;
+            if (Types.isFlagSet(align, Types.Align.LEFT)) {
                 this.x = x;
-            } else if (Types.isFlagSet(align,  Types.Align.HCENTER)) {
+            } else if (Types.isFlagSet(align, Types.Align.HCENTER)) {
                 this.x = x - this.w / 2;
             } else { //right
                 this.x = x - this.w;
             }
-            if (Types.isFlagSet(align,  Types.Align.TOP)) {
+            if (Types.isFlagSet(align, Types.Align.TOP)) {
                 this.y = y;
-            } else if (Types.isFlagSet(align,  Types.Align.VCENTER)) {
+            } else if (Types.isFlagSet(align, Types.Align.VCENTER)) {
                 this.y = y - this.h / 2;
             } else { //bottom
                 this.y = y - this.h;
@@ -59,36 +73,20 @@ public class Buttons {
             return this;
         }
 
-        public Button setPos(float x, float y, float w, float h) {
-            return setPos(x, y, w, h, 0);
-        }
-
         public boolean isInRect(float touch_x, float touch_y) {
-            if (touch_x < x || touch_y < y) return false;
-            return !(touch_x > x + w || touch_y > y + h);
+            return touch_x >= x && touch_x <= x + w && touch_y >= y && touch_y <= y + h;
         }
-
-        public float x, y;
-        public float w, h;
-        public String text;
-        public String id;
-        public boolean clicked = false;
-        public boolean active = true;
     }
 
-    public Button add(String text, String id, float x, float y, float w, float h, int align) {
-        Button b = new Button(text, id, x, y, w, h);
+    public Button add(String text, String id, float x, float y, float w, float h, int align, ButtonActionListener actionListener) {
+        Button b = new Button(text, id, x, y, w, h, actionListener);
         b.setPos(x, y, w, h, align);
         buttons.add(b);
         return b;
     }
 
-    public Button add(String text, String id, float x, float y, float w, float h) {
-        return add(text, id, x, y, w, h, 0);
-    }
-
-    public void clear() {
-        buttons.clear();
+    public Button add(String text, String id, float x, float y, float w, float h, ButtonActionListener actionListener) {
+        return add(text, id, x, y, w, h, Types.Align.DEFAULT, actionListener);
     }
 
     public Button find(String id) throws Exception {
@@ -99,55 +97,53 @@ public class Buttons {
         return null;
     }
 
-    public void setActive(String id, boolean set) throws Exception {
+    public void setVisible(String id, boolean set) throws Exception {
         Button b = find(id);
-        if (b == null) return;
-        b.active = set;
+        b.visible = set;
     }
 
-    public void disableAllButtons() {
+    public void setVisible(String id) throws Exception {
+        setVisible(id, true);
+    }
+
+    public void hideAll() {
         for (Button b : buttons) {
-            b.active = false;
+            b.visible = false;
         }
     }
 
-    public boolean checkClicked(float touch_x, float touch_y) {
+    public boolean checkPressed(float touch_x, float touch_y) {
         for (Button b : buttons) {
-            if (b.active) {
+            if (b.visible) {
                 if (b.isInRect(touch_x, touch_y)) {
-                    b.clicked = true;
-                    return true;
+                    b.clicked = 1;
+                    return true; //przechwycenie
                 }
             }
         }
         return false;
     }
 
-    public boolean checkClickedNoAction(float touch_x, float touch_y) {
+    public boolean checkReleased(float touch_x, float touch_y) {
         for (Button b : buttons) {
-            if (b.active) {
+            if (b.clicked == 1) { //jeśli był wciśnięty
                 if (b.isInRect(touch_x, touch_y)) {
-                    return true;
+                    b.clicked = 2;
+                    return true; //przechwycenie
+                } else {
+                    b.clicked = 0; //reset stanu
                 }
             }
         }
         return false;
     }
 
-    public boolean isClicked() {
+    public void executeClicked() throws Exception{
         for (Button b : buttons) {
-            if (b.clicked) return true;
-        }
-        return false;
-    }
-
-    public String clickedId() {
-        for (Button b : buttons) {
-            if (b.clicked) {
-                b.clicked = false;
-                return b.id;
+            if (b.clicked == 2) { //został kliknięty
+                b.clicked = 0; //zresetowanie udanego kliknięcia
+                b.actionListener.clicked(); //wykonanie akcji
             }
         }
-        return "";
     }
 }

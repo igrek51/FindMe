@@ -6,6 +6,7 @@ public class Types {
     }
 
     public class Align {
+        public static final int DEFAULT = 0x000;
         //  Pozycja
         public static final int LEFT = 0x001;
         public static final int RIGHT = 0x002;

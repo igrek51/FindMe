@@ -168,7 +168,7 @@ public class CanvasView extends View {
     }
 
     public void setFont() {
-        setFont(0); //reset czcionki na zwykłą
+        setFont(Types.Font.FONT_DEFAULT | Types.Font.FONT_NORMAL); //reset czcionki na zwykłą
     }
 
     public void setColor(String color) {
