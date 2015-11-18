@@ -77,7 +77,7 @@ public class Graphics extends CanvasView {
     }
 
     public void draw(Buttons.Button b) {
-        if (!b.active) return;
+        if (!b.visible) return;
         setColor(Config.Colors.buttons_background, Config.Colors.buttons_alpha);
         fillRect(b.x, b.y, b.x + b.w, b.y + b.h);
         setColor(Config.Colors.buttons_outline, Config.Colors.buttons_alpha);
