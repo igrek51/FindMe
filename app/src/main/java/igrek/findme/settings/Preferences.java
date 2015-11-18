@@ -8,7 +8,7 @@ public class Preferences {
     SharedPreferences settings;
 
     public Preferences(Activity activity) {
-        settings = activity.getApplicationContext().getSharedPreferences(Config.geti().shared_preferences_name, Context.MODE_PRIVATE);
+        settings = activity.getApplicationContext().getSharedPreferences(Config.shared_preferences_name, Context.MODE_PRIVATE);
     }
 
     public void clear() {

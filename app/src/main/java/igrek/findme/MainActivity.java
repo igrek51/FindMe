@@ -19,14 +19,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //schowanie paska tytułu
-        if (Config.geti().hide_taskbar) {
+        if (Config.hide_taskbar) {
             getSupportActionBar().hide();
         }
         //fullscreen
-        if (Config.geti().fullscreen) {
-            getWindow().setFlags(Config.geti().fullscreen_flag, Config.geti().fullscreen_flag);
+        if (Config.fullscreen) {
+            getWindow().setFlags(Config.fullscreen_flag, Config.fullscreen_flag);
         }
-        if (Config.geti().keep_screen_on) {
+        if (Config.keep_screen_on) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
         engine = new Engine(this);

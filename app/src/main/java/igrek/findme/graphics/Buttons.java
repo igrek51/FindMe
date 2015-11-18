@@ -25,18 +25,18 @@ public class Buttons {
 
         public Button setPos(float x, float y, float w, float h, int align) {
             this.w = w;
-            if (h == 0) h = Config.geti().button_height; //domyślna wysokość
+            if (h == 0) h = Config.Buttons.height; //domyślna wysokość
             this.h = h;
             if ((align & 0xf00) != 0) { //coś jest na pozycji adjust
                 Paint paint2 = new Paint();
-                paint2.setTextSize(Config.geti().buttons_fontsize);
+                paint2.setTextSize(Config.Buttons.fontsize);
                 Rect textBounds = new Rect();
                 paint2.getTextBounds(text, 0, text.length(), textBounds);
                 if (Types.isFlagSet(align,  Types.Align.HADJUST)) {
-                    this.w = textBounds.width() + 2 * Config.geti().button_padding_h;
+                    this.w = textBounds.width() + 2 * Config.Buttons.padding_h;
                 }
                 if (Types.isFlagSet(align, Types.Align.VADJUST)) {
-                    this.h = textBounds.height() + 2 * Config.geti().button_padding_v;
+                    this.h = textBounds.height() + 2 * Config.Buttons.padding_v;
                 }
             }
             //domyślne wartości

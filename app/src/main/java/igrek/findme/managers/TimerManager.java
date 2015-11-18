@@ -19,13 +19,13 @@ public class TimerManager {
 
     public TimerManager(MasterOfTime master_of_time, int interval) {
         this.master_of_time = master_of_time;
-        if (interval == 0) interval = 1000 / Config.geti().timer_fps0; //odczytanie z fpsów
+        if (interval == 0) interval = 1000 / Config.timer_fps0; //odczytanie z fpsów
         this.interval = interval;
         start();
     }
 
     public TimerManager(MasterOfTime master_of_time) {
-        this(master_of_time, Config.geti().timer_interval0);
+        this(master_of_time, Config.timer_interval0);
     }
 
     public void setInterval(int interval) {

@@ -1,17 +1,14 @@
 package igrek.findme.logic;
 
 import igrek.findme.settings.App;
-import igrek.findme.settings.Config;
 
 public class Control {
     App app;
-    Config config;
     Engine engine;
 
     public Control(Engine engine) {
         this.engine = engine;
         app = App.geti();
-        config = Config.geti();
     }
 
     public static boolean isPointInCircle(float px, float py, float circlex, float circley, float radius) {

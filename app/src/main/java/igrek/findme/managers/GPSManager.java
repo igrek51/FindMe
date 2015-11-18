@@ -22,6 +22,7 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
     Location lastNetworkLocation = null;
     long GPSTimeOffset = 0; //przesunięcie w czasie: GPSTime = SystemTime + offset
     long NetworkTimeOffset = 0; //przesunięcie w czasie: NetworkTime = SystemTime + offset
+    int gps_satellites = 0;
 
     public GPSManager(Activity activity) throws Exception {
         this.activity = activity;
@@ -31,13 +32,13 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
         }
         String providers_str = "";
         for (String provider : locationManager.getAllProviders()) {
-            providers_str += " " + provider;
+            providers_str += " " + provider + ",";
         }
-        Output.info("Dostępne metody lokalizacji:" + providers_str);
+        Output.info("Dostępne lokalizatory:" + providers_str);
         locationManager.addGpsStatusListener(this);
         locationManager.addNmeaListener(this);
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Config.geti().location.min_updates_time, Config.geti().location.min_updates_distance, this);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Config.Location.min_updates_time, Config.Location.min_updates_distance, this);
             gps_enabled = true;
             Output.info("GPS jest dostępny.");
         } else {
@@ -46,14 +47,14 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
             //activity.startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
         }
         if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, Config.geti().location.min_updates_time, Config.geti().location.min_updates_distance, this);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, Config.Location.min_updates_time, Config.Location.min_updates_distance, this);
             network_enabled = true;
             Output.info("Lokalizacja przez Internet dostępna.");
         }
         if (!gps_enabled && !network_enabled) {
             Output.errorthrow("Brak jakiejkolwiek włączonej metody lokalizacji (GPS lub Internet)");
         }
-        Output.info("Moduł lokalizacji pomyślnie uruchomiony :)");
+        Output.info("Moduł lokalizacji pomyślnie uruchomiony.");
     }
 
     public String gpsStatusToString(int gpsstatus) {
@@ -75,6 +76,7 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
             Output.info("GPS: GPS_EVENT_STARTED");
         } else if (event == GpsStatus.GPS_EVENT_STOPPED) {
             lastGPSLocation = null;
+            gps_satellites = 0;
             Output.info("GPS: GPS_EVENT_STOPPED");
         } else if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS || event == GpsStatus.GPS_EVENT_FIRST_FIX) {
             GpsStatus status = locationManager.getGpsStatus(null);
@@ -93,6 +95,7 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
                 details += ", Almanac: " + sat.hasAlmanac() + ", Ephemeris: " + sat.hasEphemeris();
                 Output.log(details);
             }
+            gps_satellites = satellites;
             Output.info("GPS: Liczba satelit: " + satellites);
         }
     }
@@ -168,21 +171,23 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
 
     public boolean isGPSAvailable() {
         if (lastGPSLocation == null) return false;
-        if (System.currentTimeMillis() + GPSTimeOffset > lastGPSLocation.getTime() + Config.geti().location.expired_time) {
-            return false;
-        }
-        return true;
+        return System.currentTimeMillis() + GPSTimeOffset <= lastGPSLocation.getTime() + Config.Location.expired_time;
     }
 
     public boolean isInternetAvailable() {
         if (lastNetworkLocation == null) return false;
-        if (System.currentTimeMillis() + NetworkTimeOffset > lastNetworkLocation.getTime() + Config.geti().location.expired_time) {
-            return false;
-        }
-        return true;
+        return System.currentTimeMillis() + NetworkTimeOffset <= lastNetworkLocation.getTime() + Config.Location.expired_time;
     }
 
     public boolean isLocationAvailable() {
         return isGPSAvailable() || isInternetAvailable();
+    }
+
+    public boolean isGPSEnabled(){
+        return gps_enabled;
+    }
+
+    public int getGPSSatellites(){
+        return gps_satellites;
     }
 }

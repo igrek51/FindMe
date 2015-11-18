@@ -24,12 +24,14 @@ import igrek.findme.settings.Config;
 import igrek.findme.system.Output;
 
 public class InternetManager {
+    NetworkInfo networkInfo;
+
     public InternetManager(Activity activity) throws Exception {
         ConnectivityManager connMgr = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connMgr == null) {
             Output.errorCritical("Błąd usługi połączenia");
         }
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo == null) {
             Output.errorthrow("Błąd połączenia z internetem");
         }
@@ -45,14 +47,14 @@ public class InternetManager {
         if(!networkInfo.isConnected()){
             Output.errorthrow("Brak połączenia internetowego.");
         }
-        Output.info("Połączenie internetowe jest dostępne :)");
+        Output.info("Połączenie internetowe jest dostępne.");
     }
 
     public abstract static class ResponseHandler {
         public void onResponse(InternetTask internetTask) throws Exception {
             //domyślna obsługa odpowiedzi
             if (internetTask.isCorrect()) {
-                if (internetTask.getResponse1Int() == Config.geti().connection.success_code) {
+                if (internetTask.getResponse1Int() == Config.Connection.success_code) {
                     onSuccess(internetTask);
                 } else {
                     Output.errorthrow(internetTask.getResponse2String());
@@ -213,8 +215,8 @@ public class InternetManager {
         try {
             URL url = new URL(internetTask.url);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setReadTimeout(Config.geti().connection.read_timeout);
-            conn.setConnectTimeout(Config.geti().connection.connect_timeout);
+            conn.setReadTimeout(Config.Connection.read_timeout);
+            conn.setConnectTimeout(Config.Connection.connect_timeout);
             conn.setDoInput(true);
             conn.setDoOutput(true);
             if (internetTask.method.equals("POST")) {
@@ -226,7 +228,7 @@ public class InternetManager {
             internetTask.response_code = conn.getResponseCode();
             is = conn.getInputStream();
             // konwersja na String
-            internetTask.response = readInputStream(is, Config.geti().connection.max_response_size);
+            internetTask.response = readInputStream(is, Config.Connection.max_response_size);
         } catch (Exception ex) {
             internetTask.error = true; //wystąpił błąd
             throw ex;
@@ -258,5 +260,25 @@ public class InternetManager {
         internetTask.data = data;
         internetTask.responseHandler = responseHandler;
         new DownloadTask().execute(internetTask);
+    }
+
+    public boolean isConnected() {
+        if (networkInfo == null) return false;
+        return networkInfo.isConnected();
+    }
+
+    public boolean isAvailable() {
+        if (networkInfo == null) return false;
+        return networkInfo.isAvailable();
+    }
+
+    public boolean isWifiEnabled(){
+        if (networkInfo == null) return false;
+        return networkInfo.getType() == ConnectivityManager.TYPE_WIFI;
+    }
+
+    public boolean isMobileEnabled(){
+        if (networkInfo == null) return false;
+        return networkInfo.getType() == ConnectivityManager.TYPE_MOBILE;
     }
 }

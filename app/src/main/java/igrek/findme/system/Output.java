@@ -20,7 +20,7 @@ public class Output {
 
     //  LOG
     public static void log(String l) {
-        Log.i(Config.geti().logTag, l);
+        Log.i(Config.Output.logTag, l);
     }
 
     public static void log(String l, int i) {
@@ -34,7 +34,7 @@ public class Output {
     //  OUTPUT na ekran w jednej linii
     private static void echoOneline(String e) {
         if (echos.length() == 0) {
-            for (int i = 0; i < Config.geti().echo_spaces; i++) {
+            for (int i = 0; i < Config.Output.echo_spaces; i++) {
                 echos += ' ';
             }
             echos += e;
@@ -60,6 +60,9 @@ public class Output {
             echoMultiline("[" + ex.getClass().getName() + "] " + ex.getMessage());
         }
         log("[EXCEPTION - " + ex.getClass().getName() + "] " + ex.getMessage());
+        if(Config.Output.show_exceptions_trace){
+            ex.printStackTrace();
+        }
     }
 
     public static void errorthrow(String e) throws Exception {
@@ -98,9 +101,9 @@ public class Output {
     private static void echoMultiline(String e) {
         String next = "";
         //podział komunikatu, jeśli nie mieści się w jednej linii
-        if (e.length() > Config.geti().echo_line_max) {
-            next = e.substring(Config.geti().echo_line_max);
-            e = e.substring(0, Config.geti().echo_line_max);
+        if (e.length() > Config.Output.echo_line_max) {
+            next = e.substring(Config.Output.echo_line_max);
+            e = e.substring(0, Config.Output.echo_line_max);
         }
         if (echos.length() == 0) {
             echos = e;
@@ -114,9 +117,9 @@ public class Output {
     }
 
     public static void echoTryClear() {
-        if (System.currentTimeMillis() > lastEcho + Config.geti().echo_showtime) {
+        if (System.currentTimeMillis() > lastEcho + Config.Output.echo_showtime) {
             echoClear1();
-            lastEcho += Config.geti().echo_showtime;
+            lastEcho += Config.Output.echo_showtime;
         }
     }
 
@@ -129,6 +132,10 @@ public class Output {
         } else {
             echos = echos.substring(firstIndex + 1);
         }
+    }
+
+    public static void echoWait(int waitms){
+        lastEcho = System.currentTimeMillis() + waitms;
     }
 
     public static String echos = "";

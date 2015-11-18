@@ -19,7 +19,6 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
     boolean running = true;
     public Activity activity;
     App app;
-    Config config;
     TimerManager timer;
     Random random;
     public Graphics graphics;
@@ -36,15 +35,15 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         this.activity = activity;
         Output.reset();
         app = App.reset(this);
-        config = Config.geti();
         preferences = new Preferences(activity);
         graphics = new Graphics(activity, this);
         buttons = new Buttons();
-        timer = new TimerManager(this, Config.geti().timer_interval0);
+        timer = new TimerManager(this, Config.timer_interval0);
         random = new Random();
         try {
             sensors = new Sensors(activity);
         } catch (Exception e) {
+            sensors = null;
             Output.error(e);
         }
         try {
@@ -55,6 +54,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         try {
             internetmanager = new InternetManager(activity);
         } catch (Exception e) {
+            internetmanager = null;
             Output.error(e);
         }
         //files = new Files(activity);
@@ -78,13 +78,14 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         control = new Control(this);
         inputmanager = new InputManager(activity, graphics);
         //przyciski
-        Buttons.Button b;
-        b = buttons.add("Znajdź mnie, Iro!", "login", 0, 0, graphics.w, 120);
-        b = buttons.add("Ustawienia", "preferences", 0, b.y + b.h, graphics.w, 0);
-        b = buttons.add("Kompas", "compass", 0, b.y + b.h, graphics.w, 0);
-        b = buttons.add("Czyść konsolę", "clear", 0, b.y + b.h, graphics.w, 0);
-        b = buttons.add("Minimalizuj", "minimize", 0, b.y + b.h, graphics.w, 0);
-        buttons.add("Zakończ", "exit", 0, b.y + b.h, graphics.w, 0);
+        Buttons.Button b1;
+        b1 = buttons.add("Znajdź mnie, Iro!", "login", 0, 0, graphics.w, 80);
+        buttons.add("Ustawienia", "preferences", 0, b1.y + b1.h, graphics.w / 2, 0);
+        b1 = buttons.add("Wyloguj", "logout", graphics.w / 2, b1.y + b1.h, graphics.w / 2, 0);
+        buttons.add("Kompas", "compass", 0, b1.y + b1.h, graphics.w / 2, 0);
+        b1 = buttons.add("Czyść konsolę", "clear", graphics.w / 2, b1.y + b1.h, graphics.w / 2, 0);
+        buttons.add("Minimalizuj", "minimize", 0, b1.y + b1.h, graphics.w / 2, 0);
+        b1 = buttons.add("Zakończ", "exit", graphics.w / 2, b1.y + b1.h, graphics.w / 2, 0);
         buttons.add("Powrót", "back", 0, graphics.h, graphics.w, 0, Types.Align.BOTTOM);
         preferencesLoad();
         try {
@@ -93,16 +94,20 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
             Output.error(e);
         }
         //odczekanie przed czyszczeniem konsoli
-        Output.lastEcho = System.currentTimeMillis() + 4000;
+        Output.echoWait(4000);
         init = true;
     }
 
     public void pause() {
-        sensors.unregister();
+        if (sensors != null) {
+            sensors.unregister();
+        }
     }
 
     public void resume() {
-        sensors.register();
+        if (sensors != null) {
+            sensors.register();
+        }
     }
 
     public void quit() {
@@ -123,7 +128,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
                 buttonsExecute(buttons.clickedId());
             }
             if (app.id_user > 0 && gps.isLocationAvailable()) { //zalogowany i ma sygnał gps (lub internet)
-                if (System.currentTimeMillis() > app.last_position_update + config.location.position_update_period) {
+                if (System.currentTimeMillis() > app.last_position_update + Config.Location.position_update_period) {
                     app.last_position_update = System.currentTimeMillis();
                     sendGPSPosition();
                 }
@@ -154,6 +159,8 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
             });
         } else if (bid.equals("login")) {
             login();
+        } else if (bid.equals("logout")) {
+            logout();
         } else if (bid.equals("compass")) {
             setAppMode(Types.AppMode.COMPASS);
         } else if (bid.equals("back")) {
@@ -201,17 +208,17 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
             inputmanager.inputScreenHide();
             return;
         }
-        try{
+        try {
             control.executeEvent(Types.ControlEvent.BACK);
-        }catch (Exception e) {
+        } catch (Exception e) {
             Output.error(e);
         }
     }
 
     public void keycode_menu() {
-        try{
+        try {
             control.executeEvent(Types.ControlEvent.MENU);
-        }catch (Exception e) {
+        } catch (Exception e) {
             Output.error(e);
         }
     }
@@ -247,6 +254,14 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
                 Output.info("Oczekiwanie na sygnał GPS...");
             }
         });
+    }
+
+    public void logout() throws Exception{
+        if(app.id_user == 0){
+            Output.errorthrow("Nie zalogowano.");
+        }
+        app.id_user = 0;
+        Output.info("Wylogowano.");
     }
 
     public void sendGPSPosition() throws Exception {
@@ -308,14 +323,19 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         if (app.mode == Types.AppMode.MENU) {
             buttons.setActive("login", true);
             buttons.setActive("preferences", true);
+            buttons.setActive("logout", true);
             buttons.setActive("compass", true);
             buttons.setActive("clear", true);
             buttons.setActive("minimize", true);
             buttons.setActive("exit", true);
-            sensors.unregister();
+            if (sensors != null) {
+                sensors.unregister();
+            }
         } else if (app.mode == Types.AppMode.COMPASS) {
             buttons.setActive("back", true);
-            sensors.register();
+            if (sensors != null) {
+                sensors.register();
+            }
         }
     }
 }

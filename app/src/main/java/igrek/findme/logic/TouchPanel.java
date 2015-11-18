@@ -10,7 +10,6 @@ public class TouchPanel {
     int dpi;
     public static final float INCH = 2.54f; //1 cal [cm]
     App app;
-    Config config;
     Engine engine;
 
     public TouchPanel(Engine engine, int w, int h) {
@@ -19,7 +18,6 @@ public class TouchPanel {
         this.h = h;
         dpi = App.geti().engine.activity.getResources().getDisplayMetrics().densityDpi;
         app = App.geti();
-        config = Config.geti();
         Output.log("DPI urządzenia: " + dpi);
     }
 
@@ -53,7 +51,7 @@ public class TouchPanel {
 
     public void controlAbsolute(float touch_x, float touch_y) throws Exception {
         //sprawdzenie kółka w środku
-        if (Control.isPointInCircle(touch_x, touch_y, w / 2, h / 2, Config.geti().touch.center_radius * w)) {
+        if (Control.isPointInCircle(touch_x, touch_y, w / 2, h / 2, Config.Touch.center_radius * w)) {
             engine.control.executeEvent(Types.ControlEvent.OK);
             return;
         }
@@ -78,30 +76,30 @@ public class TouchPanel {
 
     public void controlRealtive(float touch_x, float touch_y) throws Exception {
         float distance = (float) Math.sqrt((touch_x - start_x) * (touch_x - start_x) + (touch_y - start_y) * (touch_y - start_y));
-        if (distance <= cm_to_pixels(config.touch.max_assert_distance)) {
+        if (distance <= cm_to_pixels(Config.Touch.max_assert_distance)) {
             engine.control.executeEvent(Types.ControlEvent.OK);
             return;
         }
-        if (distance < cm_to_pixels(config.touch.min_relative_distance)) {
+        if (distance < cm_to_pixels(Config.Touch.min_relative_distance)) {
             Output.log("Touchpanel: Sterowanie względne: przemieszczenie za krótkie - brak akcji");
             return;
         }
         //obliczenie kąta względem osi X+
         float angle = (float) (Math.atan2(touch_y - start_y, touch_x - start_x) * 180 / Math.PI);
         //w prawo: 0
-        if (Control.isAngleInRange(angle, 0 - config.touch.max_angle_bias, 0 + config.touch.max_angle_bias)) {
+        if (Control.isAngleInRange(angle, 0 - Config.Touch.max_angle_bias, 0 + Config.Touch.max_angle_bias)) {
             engine.control.executeEvent(Types.ControlEvent.RIGHT);
         }
         //w dół: 90
-        else if (Control.isAngleInRange(angle, 90 - config.touch.max_angle_bias, 90 + config.touch.max_angle_bias)) {
+        else if (Control.isAngleInRange(angle, 90 - Config.Touch.max_angle_bias, 90 + Config.Touch.max_angle_bias)) {
             engine.control.executeEvent(Types.ControlEvent.DOWN);
         }
         //w lewo: 180
-        else if (Control.isAngleInRange(angle, 180 - config.touch.max_angle_bias, 180 + config.touch.max_angle_bias)) {
+        else if (Control.isAngleInRange(angle, 180 - Config.Touch.max_angle_bias, 180 + Config.Touch.max_angle_bias)) {
             engine.control.executeEvent(Types.ControlEvent.LEFT);
         }
         //w górę: 270
-        else if (Control.isAngleInRange(angle, 270 - config.touch.max_angle_bias, 270 + config.touch.max_angle_bias)) {
+        else if (Control.isAngleInRange(angle, 270 - Config.Touch.max_angle_bias, 270 + Config.Touch.max_angle_bias)) {
             engine.control.executeEvent(Types.ControlEvent.UP);
         } else {
             Output.log("Touchpanel: Sterowanie względne: kąt zbyt odchylony - brak akcji");

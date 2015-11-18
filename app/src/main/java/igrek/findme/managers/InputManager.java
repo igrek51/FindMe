@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import igrek.findme.R;
 import igrek.findme.graphics.Graphics;
+import igrek.findme.system.Output;
 
 public class InputManager {
     Graphics graphics;
@@ -78,6 +79,7 @@ public class InputManager {
 
     public void inputScreenHide(){
         imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+        Output.echoWait(0);
         activity.setContentView(graphics);
         visible = false;
         if(inputHandler!=null){
