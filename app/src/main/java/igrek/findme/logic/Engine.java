@@ -10,6 +10,7 @@ import java.util.List;
 import igrek.findme.graphics.*;
 import igrek.findme.graphics.Buttons.*;
 import igrek.findme.managers.*;
+import igrek.findme.managers.InputManager.*;
 import igrek.findme.managers.InternetManager.*;
 import igrek.findme.settings.*;
 import igrek.findme.system.Output;
@@ -100,7 +101,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         });
         buttons.add("Zakończ", "exit", graphics.w / 2, buttons.lastYTop(), graphics.w / 2, 0, new ButtonActionListener() {
             public void clicked() throws Exception {
-                Output.info("Zamykam...");
+                Output.info("Zamykanie...");
                 control.executeEvent(Types.ControlEvent.BACK);
             }
         });
@@ -170,13 +171,13 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
     }
 
     public void clickedPreferences() {
-        inputmanager.inputScreenShow("Login:", new InputManager.InputHandler() {
+        inputmanager.inputScreenShow("Login:", new InputHandlerCancellable() {
             @Override
-            public void onInput(String inputText) {
+            public void onAccept(String inputText) {
                 app.login = inputText;
-                inputmanager.inputScreenShow("Hasło:", new InputManager.InputHandler() {
+                inputmanager.inputScreenShow("Hasło:", new InputHandlerCancellable() {
                     @Override
-                    public void onInput(String inputText) {
+                    public void onAccept(String inputText) {
                         app.pass = inputText;
                         preferencesSave();
                     }
@@ -219,7 +220,9 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
 
     public void keycode_back() {
         if (inputmanager.visible) {
-            inputmanager.inputScreenHide();
+            if (inputmanager.isCancellable()) {
+                inputmanager.inputScreenCancel();
+            }
             return;
         }
         try {

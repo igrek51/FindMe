@@ -3,5 +3,6 @@
 
     <string name="action_exit">Wyjście</string>
     <string name="button_ok">OK</string>
+    <string name="button_cancel">Anuluj</string>
     <string name="label_text">Label</string>
 </resources>

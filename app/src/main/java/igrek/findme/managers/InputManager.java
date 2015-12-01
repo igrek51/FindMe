@@ -22,6 +22,8 @@ public class InputManager {
     TextView textViewLabel;
     View layoutView;
     InputHandler inputHandler = null;
+    Button button_ok;
+    Button button_cancel;
     //TODO: przycisk anuluj nie wprowadza nic, wywołuję akcję onCancel
 
     public InputManager(Activity activity, Graphics graphics) {
@@ -34,34 +36,32 @@ public class InputManager {
         LayoutInflater inflater = activity.getLayoutInflater();
         layoutView = inflater.inflate(R.layout.keyboardinput, null);
         //akcja dla przycisku OK
-        Button button_ok = (Button) layoutView.findViewById(R.id.button_ok);
-        button_ok.setOnClickListener(new ButtonOK());
+        button_ok = (Button) layoutView.findViewById(R.id.button_ok);
+        button_ok.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                inputScreenAccept();
+            }
+        });
+        //TODO: do zrobienia !!!
+        button_cancel = (Button) layoutView.findViewById(R.id.button_cancel);
+        button_cancel.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                inputScreenCancel();
+            }
+        });
         editText = (EditText) layoutView.findViewById(R.id.inputKeyboardText);
         textViewLabel = (TextView) layoutView.findViewById(R.id.label_text);
     }
 
-    public interface InputHandler {
-        void onInput(String inputText);
+    public abstract static class InputHandler {
+        public void onAccept(String inputText){ }
     }
 
-    public class ButtonOK implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            inputScreenHide();
-        }
+    public abstract static class InputHandlerCancellable extends InputHandler {
+        public void onCancel(String inputText){ }
     }
-
-    /*
-    public class GlobalLayoutListener implements ViewTreeObserver.OnGlobalLayoutListener {
-        @Override
-        public void onGlobalLayout() {
-            Rect r = new Rect();
-            graphics.getWindowVisibleDisplayFrame(r);
-            int heightDiff = graphics.getRootView().getHeight() - (r.bottom - r.top);
-            keyboard_actual_shown = heightDiff >= Config.geti().keyboard_min_height;
-        }
-    }
-    */
 
     public void inputScreenShow(String label, String value, InputHandler inputHandler) {
         this.inputHandler = inputHandler;
@@ -70,6 +70,12 @@ public class InputManager {
         textViewLabel.setText(label);
         editText.setText(value);
         editText.requestFocus();
+        //button cancel
+        if(inputHandler instanceof InputHandlerCancellable){
+            button_cancel.setVisibility(View.VISIBLE);
+        }else{
+            button_cancel.setVisibility(View.INVISIBLE);
+        }
         imm.showSoftInput(editText, 0);
         visible = true;
     }
@@ -83,12 +89,26 @@ public class InputManager {
         Output.echoWait(0);
         activity.setContentView(graphics);
         visible = false;
+    }
+
+    public void inputScreenAccept(){
+        inputScreenHide();
         if(inputHandler!=null){
-            inputHandler.onInput(editText.getText().toString()); //wywołanie zdarzenia
+            inputHandler.onAccept(editText.getText().toString()); //wywołanie zdarzenia
         }
     }
 
-    public String getInputText(){
-        return editText.getText().toString();
+    public boolean isCancellable() {
+        return inputHandler != null && inputHandler instanceof InputHandlerCancellable;
+    }
+
+    public void inputScreenCancel(){
+        inputScreenHide();
+        if(inputHandler!=null){
+            if(inputHandler instanceof InputHandlerCancellable) {
+                InputHandlerCancellable inputHandlerCancellable = (InputHandlerCancellable) inputHandler;
+                inputHandlerCancellable.onCancel(editText.getText().toString()); //wywołanie zdarzenia
+            }
+        }
     }
 }
