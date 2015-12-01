@@ -30,13 +30,13 @@ public class CanvasView extends View {
 
     //obsługa zdarzeń ekranu dotykowego do zaimplementowania
     public interface TouchPanel {
-        void touch_down(float touch_x, float touch_y);
+        void touchDown(float touch_x, float touch_y);
 
-        void touch_move(float touch_x, float touch_y);
+        void touchMove(float touch_x, float touch_y);
 
-        void touch_up(float touch_x, float touch_y);
+        void touchUp(float touch_x, float touch_y);
 
-        void resize_event();
+        void resizeEvent();
     }
 
     @Override
@@ -44,7 +44,7 @@ public class CanvasView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         this.w = getWidth();
         this.h = getHeight();
-        engine.resize_event();
+        engine.resizeEvent();
     }
 
     @Override
@@ -60,13 +60,13 @@ public class CanvasView extends View {
         float touch_y = event.getY();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                engine.touch_down(touch_x, touch_y);
+                engine.touchDown(touch_x, touch_y);
                 break;
             case MotionEvent.ACTION_MOVE:
-                engine.touch_move(touch_x, touch_y);
+                engine.touchMove(touch_x, touch_y);
                 break;
             case MotionEvent.ACTION_UP:
-                engine.touch_up(touch_x, touch_y);
+                engine.touchUp(touch_x, touch_y);
                 break;
         }
         return true;

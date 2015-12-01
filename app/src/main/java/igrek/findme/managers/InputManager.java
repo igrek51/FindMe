@@ -22,6 +22,7 @@ public class InputManager {
     TextView textViewLabel;
     View layoutView;
     InputHandler inputHandler = null;
+    //TODO: przycisk anuluj nie wprowadza nic, wywołuję akcję onCancel
 
     public InputManager(Activity activity, Graphics graphics) {
         this.activity = activity;

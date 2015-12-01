@@ -34,9 +34,9 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
         for (String provider : locationManager.getAllProviders()) {
             providers_str += " " + provider + ",";
         }
-        Output.info("Dostępne lokalizatory:" + providers_str);
+        Output.log("Dostępne lokalizatory:" + providers_str);
         locationManager.addGpsStatusListener(this);
-        locationManager.addNmeaListener(this);
+        //locationManager.addNmeaListener(this);
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Config.Location.min_updates_time, Config.Location.min_updates_distance, this);
             gps_enabled = true;
@@ -54,7 +54,7 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
         if (!gps_enabled && !network_enabled) {
             Output.errorthrow("Brak jakiejkolwiek włączonej metody lokalizacji (GPS lub Internet)");
         }
-        Output.info("Moduł lokalizacji pomyślnie uruchomiony.");
+        Output.log("Moduł lokalizacji pomyślnie uruchomiony.");
     }
 
     public String gpsStatusToString(int gpsstatus) {
@@ -96,7 +96,7 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
                 Output.log(details);
             }
             gps_satellites = satellites;
-            Output.info("GPS: Liczba satelit: " + satellites);
+            //Output.info("GPS: Liczba satelit: " + satellites);
         }
     }
 
@@ -111,11 +111,11 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
         if (loc.getProvider().equals(LocationManager.GPS_PROVIDER)) {
             lastGPSLocation = loc;
             GPSTimeOffset = lastGPSLocation.getTime() - System.currentTimeMillis();
-            Output.info("Lokalizacja (GPS): " + loc.getLongitude() + ", " + loc.getLatitude() + " (" + loc.getExtras().getInt("satellites") + ")");
+            Output.log("Lokalizacja (GPS): " + loc.getLongitude() + ", " + loc.getLatitude() + " (" + loc.getExtras().getInt("satellites") + ")");
         } else if (loc.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
             lastNetworkLocation = loc;
             NetworkTimeOffset = lastNetworkLocation.getTime() - System.currentTimeMillis();
-            Output.info("Lokalizacja (Internet): " + loc.getLongitude() + ", " + loc.getLatitude());
+            Output.log("Lokalizacja (Internet): " + loc.getLongitude() + ", " + loc.getLatitude());
         } else {
             Output.info("Nieznany provider: " + loc.getProvider());
         }
@@ -179,6 +179,17 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
         return System.currentTimeMillis() + NetworkTimeOffset <= lastNetworkLocation.getTime() + Config.Location.expired_time;
     }
 
+    public long getLastLocationTime(){
+        //zwraca czas ostatniej pozycji (względem czasu na urządzeniu)
+        if(isGPSAvailable()){
+            return lastGPSLocation.getTime() - GPSTimeOffset;
+        }else if(isInternetAvailable()){
+            return lastNetworkLocation.getTime() - NetworkTimeOffset;
+        }else{
+            return -1;
+        }
+    }
+
     public boolean isLocationAvailable() {
         return isGPSAvailable() || isInternetAvailable();
     }
@@ -189,5 +200,15 @@ public class GPSManager implements LocationListener, GpsStatus.Listener, GpsStat
 
     public int getGPSSatellites(){
         return gps_satellites;
+    }
+
+    public int getProviderCode(Location l) {
+        //1 - GPS, 2 - Internet, NULL - nieznany
+        if(l.getProvider().equals(LocationManager.GPS_PROVIDER)){
+            return 1;
+        }else if(l.getProvider().equals(LocationManager.NETWORK_PROVIDER)){
+            return 2;
+        }
+        return 0;
     }
 }

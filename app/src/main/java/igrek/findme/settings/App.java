@@ -38,5 +38,5 @@ public class App {
     public String login;
     public String pass;
     //  GPS
-    public long last_position_update = 0;
+    public long last_position_update = 0; //czas wysłania ostatniej pozycji
 }

@@ -6,7 +6,6 @@ import android.location.Location;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import igrek.findme.graphics.*;
 import igrek.findme.graphics.Buttons.*;
@@ -21,7 +20,6 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
     public Activity activity;
     App app;
     TimerManager timer;
-    Random random;
     public Graphics graphics;
     public Buttons buttons;
     TouchPanel touchpanel = null;
@@ -40,7 +38,6 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         graphics = new Graphics(activity, this);
         buttons = new Buttons();
         timer = new TimerManager(this, Config.timer_interval0);
-        random = new Random();
         try {
             sensors = new Sensors(activity);
         } catch (Exception e) {
@@ -58,6 +55,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
             internetmanager = null;
             Output.error(e);
         }
+        activity.setContentView(graphics);
         //files = new Files(activity);
         Output.log("Utworzenie aplikacji.");
     }
@@ -69,39 +67,40 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         control = new Control(this);
         inputmanager = new InputManager(activity, graphics);
         //przyciski
-        Buttons.Button b1;
-        b1 = buttons.add("Znajdź mnie, Iro!", "login", 0, 0, graphics.w, 80, new ButtonActionListener() {
+        //TODO: rozmiary buttonów w module grafiki
+        buttons.add("Znajdź mnie, Iro!", "login", 0, 0, graphics.w, Config.Buttons.height * 2, new ButtonActionListener() {
             public void clicked() throws Exception {
                 login();
             }
         });
-        buttons.add("Ustawienia", "preferences", 0, b1.y + b1.h, graphics.w / 2, 0, new ButtonActionListener() {
+        buttons.add("Ustawienia", "preferences", 0, buttons.lastYBottom(), graphics.w / 2, 0, new ButtonActionListener() {
             public void clicked() throws Exception {
                 clickedPreferences();
             }
         });
-        b1 = buttons.add("Wyloguj", "logout", graphics.w / 2, b1.y + b1.h, graphics.w / 2, 0, new ButtonActionListener() {
+        buttons.add("Wyloguj", "logout", graphics.w / 2, buttons.lastYTop(), graphics.w / 2, 0, new ButtonActionListener() {
             public void clicked() throws Exception {
                 logout();
             }
         });
-        buttons.add("Kompas", "compass", 0, b1.y + b1.h, graphics.w / 2, 0, new ButtonActionListener() {
+        buttons.add("Kompas", "compass", 0, buttons.lastYBottom(), graphics.w / 2, 0, new ButtonActionListener() {
             public void clicked() throws Exception {
                 setAppMode(Types.AppMode.COMPASS);
             }
         });
-        b1 = buttons.add("Czyść konsolę", "clear", graphics.w / 2, b1.y + b1.h, graphics.w / 2, 0, new ButtonActionListener() {
+        buttons.add("Czyść konsolę", "clear", graphics.w / 2, buttons.lastYTop(), graphics.w / 2, 0, new ButtonActionListener() {
             public void clicked() throws Exception {
-                Output.echos = "";
+                Output.reset();
             }
         });
-        buttons.add("Minimalizuj", "minimize", 0, b1.y + b1.h, graphics.w / 2, 0, new ButtonActionListener() {
+        buttons.add("Minimalizuj", "minimize", 0, buttons.lastYBottom(), graphics.w / 2, 0, new ButtonActionListener() {
             public void clicked() throws Exception {
                 minimize();
             }
         });
-        b1 = buttons.add("Zakończ", "exit", graphics.w / 2, b1.y + b1.h, graphics.w / 2, 0, new ButtonActionListener() {
+        buttons.add("Zakończ", "exit", graphics.w / 2, buttons.lastYTop(), graphics.w / 2, 0, new ButtonActionListener() {
             public void clicked() throws Exception {
+                Output.info("Zamykam...");
                 control.executeEvent(Types.ControlEvent.BACK);
             }
         });
@@ -118,6 +117,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         }
         //odczekanie przed czyszczeniem konsoli
         Output.echoWait(4000);
+        graphics.init = true;
         init = true;
     }
 
@@ -145,7 +145,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
 
     public void quit() {
         if (!running) { //próba ponownego zamknięcia
-            Output.log("Anulowanie próby ponownego zamknięcia aplikacji.");
+            Output.log("Zamykanie aplikacji (2) - anulowanie");
             return;
         }
         running = false;
@@ -169,7 +169,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         }
     }
 
-    public void clickedPreferences(){
+    public void clickedPreferences() {
         inputmanager.inputScreenShow("Login:", new InputManager.InputHandler() {
             @Override
             public void onInput(String inputText) {
@@ -186,7 +186,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
     }
 
     @Override
-    public void touch_down(float touch_x, float touch_y) {
+    public void touchDown(float touch_x, float touch_y) {
         if (buttons.checkPressed(touch_x, touch_y)) return;
         if (touchpanel != null) {
             touchpanel.touch_down(touch_x, touch_y);
@@ -194,14 +194,15 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
     }
 
     @Override
-    public void touch_move(float touch_x, float touch_y) {
+    public void touchMove(float touch_x, float touch_y) {
+        if (buttons.checkMoved(touch_x, touch_y)) return;
         if (touchpanel != null) {
             touchpanel.touch_move(touch_x, touch_y);
         }
     }
 
     @Override
-    public void touch_up(float touch_x, float touch_y) {
+    public void touchUp(float touch_x, float touch_y) {
         if (buttons.checkReleased(touch_x, touch_y)) return;
         if (touchpanel != null) {
             touchpanel.touch_up(touch_x, touch_y);
@@ -209,7 +210,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
     }
 
     @Override
-    public void resize_event() {
+    public void resizeEvent() {
         app.w = graphics.w;
         app.h = graphics.h;
         if (!init) init();
@@ -263,14 +264,13 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
             @Override
             public void onSuccess(InternetTask internetTask) throws Exception {
                 app.id_user = internetTask.getResponse2Int();
-                Output.info("Zalogowano, ID: " + app.id_user);
-                Output.info("Oczekiwanie na sygnał GPS...");
+                Output.info("Zalogowano jako: " + app.login + " (ID: " + app.id_user + ")");
             }
         });
     }
 
-    public void logout() throws Exception{
-        if(app.id_user == 0){
+    public void logout() throws Exception {
+        if (app.id_user == 0) {
             Output.errorthrow("Nie zalogowano.");
         }
         app.id_user = 0;
@@ -299,6 +299,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
             if (location.hasSpeed()) {
                 data.add(new Variable("speed", location.getSpeed()));
             }
+            data.add(new Variable("provider", gps.getProviderCode(location)));
             internetmanager.POST("http://igrek.cba.pl/findme/send_location.php", data, new ResponseHandler() {
                 @Override
                 public void onSuccess(InternetTask internetTask) throws Exception {
@@ -350,5 +351,17 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
                 sensors.register();
             }
         }
+    }
+
+    public String getElapsedTimeFormatted(long time2) {
+        long ms = System.currentTimeMillis() - time2;
+        int min = (int) (ms / 1000 / 60);
+        int s = (int) (ms / 1000);
+        String output = "";
+        if (min > 0) {
+            output += min + " min ";
+        }
+        output += s + " s";
+        return output;
     }
 }

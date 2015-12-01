@@ -20,7 +20,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         //schowanie paska tytułu
         if (Config.hide_taskbar) {
-            getSupportActionBar().hide();
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().hide();
+            }
         }
         //fullscreen
         if (Config.fullscreen) {
@@ -30,7 +32,6 @@ public class MainActivity extends AppCompatActivity {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
         engine = new Engine(this);
-        setContentView(engine.graphics);
     }
 
     @Override

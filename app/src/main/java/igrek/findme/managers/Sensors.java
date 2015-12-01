@@ -16,7 +16,9 @@ public class Sensors implements SensorEventListener {
     Sensor sensor = null;
     float values[] = new float[3];
     List<Sensor> msensorList;
+    //TODO: odczyt azymutu (i siły sygnału - nachylenia) z magnetometru
     public final int sensor_type = Sensor.TYPE_ROTATION_VECTOR;
+    public final int sensor_type2 = Sensor.TYPE_GAME_ROTATION_VECTOR;
 
     public Sensors(Activity activity) throws Exception {
         this.activity = activity;
@@ -29,7 +31,10 @@ public class Sensors implements SensorEventListener {
         //szukanie wybranego sensora
         sensor = sensorManager.getDefaultSensor(sensor_type);
         if (sensor == null) {
-            Output.errorthrow("Nie znaleziono sensora");
+            sensor = sensorManager.getDefaultSensor(sensor_type2);
+            if (sensor == null) {
+                Output.errorthrow("Nie znaleziono sensora");
+            }
         }
     }
 
@@ -55,7 +60,7 @@ public class Sensors implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == sensor_type) {
+        if (event.sensor.getType() == sensor_type || event.sensor.getType() == sensor_type2) {
             for (int i = 0; i < event.values.length; i++) {
                 values[i] = event.values[i];
             }

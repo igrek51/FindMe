@@ -16,8 +16,8 @@ public class TouchPanel {
         this.engine = engine;
         this.w = w;
         this.h = h;
-        dpi = App.geti().engine.activity.getResources().getDisplayMetrics().densityDpi;
         app = App.geti();
+        dpi = engine.activity.getResources().getDisplayMetrics().densityDpi;
         Output.log("DPI urządzenia: " + dpi);
     }
 
@@ -27,6 +27,10 @@ public class TouchPanel {
 
     public float cm_to_pixels(float cm) {
         return cm / INCH * dpi;
+    }
+
+    public float partialW(float partOfWidth){
+        return w * partOfWidth;
     }
 
     public boolean touch_down(float touch_x, float touch_y) {
