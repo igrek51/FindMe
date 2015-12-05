@@ -22,7 +22,7 @@ public class Sensors implements SensorEventListener {
 
     public Sensors(Activity activity) throws Exception {
         this.activity = activity;
-        sensorManager = (SensorManager) activity.getSystemService(this.activity.SENSOR_SERVICE);
+        sensorManager = (SensorManager) activity.getSystemService(Activity.SENSOR_SERVICE);
         if (sensorManager == null) {
             Output.errorCritical("Błąd usługi sensorów");
         }

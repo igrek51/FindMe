@@ -24,7 +24,6 @@ public class InputManager {
     InputHandler inputHandler = null;
     Button button_ok;
     Button button_cancel;
-    //TODO: przycisk anuluj nie wprowadza nic, wywołuję akcję onCancel
 
     public InputManager(Activity activity, Graphics graphics) {
         this.activity = activity;
@@ -43,7 +42,6 @@ public class InputManager {
                 inputScreenAccept();
             }
         });
-        //TODO: do zrobienia !!!
         button_cancel = (Button) layoutView.findViewById(R.id.button_cancel);
         button_cancel.setOnClickListener(new View.OnClickListener(){
             @Override

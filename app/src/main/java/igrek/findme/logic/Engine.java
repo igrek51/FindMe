@@ -338,6 +338,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
         app.mode = mode;
         buttons.hideAll();
         if (app.mode == Types.AppMode.MENU) {
+            //TODO: przeniesienie widoczności buttonów do grafiki
             buttons.setVisible("login");
             buttons.setVisible("preferences");
             buttons.setVisible("logout");
