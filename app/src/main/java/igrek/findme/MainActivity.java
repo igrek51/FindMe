@@ -73,9 +73,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
         //event obsłużony lub przekazany dalej
-        return engine.options_select(id) || super.onOptionsItemSelected(item);
+        return engine.options_select(item.getItemId()) || super.onOptionsItemSelected(item);
     }
 
     @Override
