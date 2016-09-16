@@ -6,7 +6,7 @@ public class Config {
     //STAŁE
     //  OUTPUT
     public static class Output {
-        public static final String logTag = "AppLog";
+        public static final String logTag = "log";
         public static final int echo_spaces = 43;
         public static final int echo_showtime = 1800; //[ms]
         public static final int echo_line_max = 40; //maksymalna liczba znaków w 1 wierszu
@@ -50,7 +50,8 @@ public class Config {
         public static class Stats {
             public static final int success = 0x00c000;
             public static final int error = 0xc00000;
-            public static final int info = 0x0000a0;
+            //TODO: zmiana kolorka na czytelniejszy
+            public static final int info = 0x0060a0;
         }
     }
     //  PANEL DOTYKOWY
@@ -84,15 +85,22 @@ public class Config {
     }
     //  KOMPAS
     public static final float compass_scale = 0.7f;
-    //Zestaw ustawień: 0 - xperia mini (DEFAULT), 1 - samsung ace 2 (AGA)
-    public static final int config_set = 0;
-    //nadpisanie stałych dla innego zestawu
-    static {
+    //Zestaw ustawień: 0 - xperia mini (DEFAULT), 1 - samsung ace 2 (AGA), 2 - samsung GGP
+    //TODO: większe literki i buttony dla grand prime
+    public static final int config_set = 2;
+    //nadpisanie parametrów dla innego zestawu
+    public static void selectSet() {
         if (config_set == 1) {
+            Buttons.fontsize = 24;
+            Buttons.height = 70;
+            Fonts.fontsize = 24;
+            Fonts.lineheight = 26;
+        }else if (config_set == 2) {
             Buttons.fontsize = 24;
             Buttons.height = 70;
             Fonts.fontsize = 24;
             Fonts.lineheight = 26;
         }
     }
+
 }

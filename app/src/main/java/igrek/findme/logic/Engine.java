@@ -15,6 +15,7 @@ import igrek.findme.managers.InternetManager.*;
 import igrek.findme.settings.*;
 import igrek.findme.system.Output;
 
+//TODO: ikonka aplikacji
 public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel {
     boolean init = false;
     boolean running = true;
@@ -33,6 +34,7 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
 
     public Engine(Activity activity) {
         this.activity = activity;
+        Config.selectSet();
         Output.reset();
         app = App.reset(this);
         preferences = new Preferences(activity);
@@ -157,6 +159,8 @@ public class Engine implements TimerManager.MasterOfTime, CanvasView.TouchPanel 
 
     public void update() {
         try {
+			//TODO: repaint tylko w potrzebie a nie w każdej klatce
+			
             //obsługa przycisków
             buttons.executeClicked();
             if (app.id_user > 0 && gps.isLocationAvailable()) { //zalogowany i ma sygnał gps (lub internet)

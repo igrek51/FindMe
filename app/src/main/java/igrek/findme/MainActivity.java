@@ -12,6 +12,8 @@ import igrek.findme.logic.Engine;
 import igrek.findme.settings.Config;
 import igrek.findme.system.Output;
 
+//TODO: release build
+
 public class MainActivity extends AppCompatActivity {
     private Engine engine = null;
 
